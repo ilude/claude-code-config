@@ -69,88 +69,24 @@
 
 ## Git Workflow
 
-### When to Commit
-- **Only commit when explicitly requested**
-- Ask for clarification if commit intent is unclear
-- Multiple related changes can be a single commit
-- Unrelated changes should be separate commits
+**Git workflow guidelines have been moved to a skill for context efficiency.**
 
-### Before Committing (CRITICAL - Security First)
-1. **Scan for sensitive data FIRST**:
-   - API keys, tokens, passwords (patterns: `API_KEY=`, `TOKEN=`, `sk-`, `Bearer`)
-   - Files: `.env`, `credentials.json`, `.pem`, `.key`, private keys
-   - Hardcoded secrets in code
-   - Any patterns typically containing secrets
+The `git-workflow` skill contains comprehensive guidelines including:
+- Security-first approach (scan for secrets before committing)
+- Commit organization and logical grouping
+- Commit message format with HEREDOC
+- Verification and push behavior
+- Safety rules for hooks and force pushes
 
-2. **If security issues found**:
-   - STOP IMMEDIATELY - do NOT create any commits
-   - Show which files/lines contain sensitive data
-   - Suggest `.gitignore` entries
-   - Suggest using environment variables instead
-   - Exit without committing
+**The skill auto-activates** when git operations are detected (committing, pushing, version control).
 
-3. **Analyze changes** (run in parallel):
-   - `git status` - See all uncommitted changes
-   - `git diff` - Understand what changed
-   - `git log` - Learn repository's commit message style
+**Quick reference:**
+- Only commit when explicitly requested
+- Security scan ALWAYS runs first
+- Use semantic commit types: docs, test, feat, fix, refactor, chore, build, deps
+- Only push when explicitly requested with "push" keyword
 
-### Commit Organization
-Group changes logically by type/purpose:
-- **docs**: Documentation (`*.md`, README, comments)
-- **test**: Tests (`test_*.py`, `*.spec.*`, `tests/`)
-- **feat**: New features (new capabilities)
-- **fix**: Bug fixes (corrections to existing functionality)
-- **refactor**: Code improvements without behavior changes
-- **chore**: Configuration (`.gitignore`, `pyproject.toml`, config files)
-- **build**: Build/CI (`Dockerfile`, `.github/`, CI configs)
-- **deps**: Dependencies only (`uv.lock`, `requirements.txt`)
-
-**Single commit** if all changes are closely related.
-**Multiple commits** only when changes serve different purposes.
-
-### Commit Message Format
-Use HEREDOC format for proper multi-line formatting:
-```bash
-git commit -m "$(cat <<'EOF'
-<type>: <concise summary>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
-```
-
-**Guidelines**:
-- Follow project's commit message style (from git log)
-- Focus on "why" rather than "what"
-- Keep summary concise (1-2 sentences)
-- Always include Claude Code attribution (above format)
-
-### Verification
-After creating commits:
-- Run `git status` to verify NO uncommitted changes remain
-- Show summary of commits created
-- If files remain uncommitted (and no security issues), create additional commits
-
-### Pushing to Remote
-**Only push when explicitly requested**:
-- "commit these changes" → Commit only, do NOT push
-- "commit and push" → Commit + push
-- "push after committing" → Commit + push
-
-When pushing:
-- Push ONLY after ALL commits are successfully created
-- Single push for all commits
-- Verify push succeeds
-
-### Safety Rules
-- **Never skip hooks** (no `--no-verify`) unless explicitly requested
-- **Never run destructive commands** without confirmation
-- **No force pushes** to main/master branches
-- **Check authorship** before amending commits (only amend your own)
-- **Never amend commits** by other developers
-- **If pre-commit hooks modify files**: Only amend if safe (check authorship first)
+See `~/.claude/skills/git-workflow/SKILL.md` for complete guidelines.
 
 ---
 
@@ -289,6 +225,13 @@ This personal ruleset was created during a multi-agent learning project. Key lea
 ---
 
 ## Updates
+
+**2025-11-04**: Moved Git Workflow to skill for context efficiency
+- Created `git-workflow` skill in `~/.claude/skills/git-workflow/`
+- Moved all git workflow guidelines from CLAUDE.md to skill
+- Skill auto-activates when git operations detected
+- Saves ~70 lines of context in non-git sessions
+- Progressive disclosure improves token efficiency
 
 **2025-11-04**: Enhanced Git Workflow section
 - Extracted core principles from `/commit` command
