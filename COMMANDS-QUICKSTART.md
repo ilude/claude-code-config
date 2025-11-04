@@ -1,14 +1,53 @@
 # Personal Commands Quick Start
 
 **Created**: 2025-11-04
+**Updated**: 2025-11-04 (Added project-aware checkpoints)
 
 ## What Was Set Up
 
 ✅ Personal ruleset: `~/.claude/CLAUDE.md` (231 lines)
 ✅ Personal commands directory: `~/.claude/commands/`
-✅ Optimization command: `/optimize-ruleset` (670 lines)
-✅ Checkpoint system: `~/.claude/CHECKPOINT`
+✅ Optimization command: `/optimize-ruleset` (829 lines) ⭐ **NOW PROJECT-AWARE**
+✅ Checkpoint system: **Multi-line format** supporting multiple command types
 ✅ Documentation: `~/.claude/commands/README.md`
+
+---
+
+## 🎉 NEW: Project-Aware Checkpoint System!
+
+### What Changed
+
+**Before**:
+- Single global checkpoint: `~/.claude/CHECKPOINT`
+- Analyzed ALL history regardless of project
+- Re-analyzed same history for different projects
+
+**After**:
+- **Project checkpoints**: `.claude/CHECKPOINT` in each project
+- **Personal checkpoint**: `~/.claude/CHECKPOINT` for personal ruleset
+- **Multi-line format**: Supports multiple command types
+- **Project filtering**: Only analyzes history for current project
+
+### Why This Matters
+
+```
+Project A Work:
+└─ Checkpoint: agent-spike/.claude/CHECKPOINT
+└─ Analyzes: Only history from agent-spike
+└─ Learns: Patterns specific to this project
+
+Project B Work:
+└─ Checkpoint: other-project/.claude/CHECKPOINT
+└─ Analyzes: Only history from other-project
+└─ Learns: Patterns specific to that project
+
+Personal Ruleset:
+└─ Checkpoint: ~/.claude/CHECKPOINT
+└─ Analyzes: History from ALL projects
+└─ Learns: Cross-project patterns
+```
+
+**Result**: No redundant analysis, faster runs, more relevant patterns!
 
 ---
 
@@ -16,29 +55,30 @@
 
 ### Test the /optimize-ruleset Command
 
+**In your current project** (agent-spike):
 ```bash
-# In your current project (agent-spike)
 /optimize-ruleset
-
-# This will:
-# 1. Analyze chat history from checkpoint forward
-# 2. Detect patterns and issues
-# 3. Examine .claude/CLAUDE.md in this project
-# 4. Provide unified recommendations
-# 5. Update CHECKPOINT
 ```
 
-**Expected First Run**:
-- Analyzes entire history (~19KB of chat data)
-- Detects patterns like manual .venv paths
-- Finds issues in project CLAUDE.md (we just fixed these!)
-- Shows comprehensive report
-- Creates/updates CHECKPOINT
+**What happens**:
+1. Creates `.claude/CHECKPOINT` in this project (if doesn't exist)
+2. Analyzes history entries where `project == /c/Projects/Personal/agent-spike`
+3. Detects patterns from THIS project only
+4. Examines `.claude/CLAUDE.md` in this project
+5. Provides recommendations
+6. Updates `.claude/CHECKPOINT` with current timestamp
 
-**Expected Subsequent Runs**:
-- Only analyzes NEW history since checkpoint
-- Incrementally learns from recent sessions
-- Updates recommendations based on latest patterns
+**Optimize personal ruleset**:
+```bash
+/optimize-ruleset personal
+```
+
+**What happens**:
+1. Uses `~/.claude/CHECKPOINT` (global)
+2. Analyzes history from ALL projects
+3. Detects cross-project patterns
+4. Examines `~/.claude/CLAUDE.md`
+5. Updates `~/.claude/CHECKPOINT`
 
 ---
 
@@ -46,68 +86,162 @@
 
 ### `/optimize-ruleset [personal]`
 
-**Most Powerful Command** - Self-improving meta-learning system
+**Most Powerful Command** - Self-improving meta-learning system with project awareness
 
-**No parameter**: Optimize project ruleset
+**No parameter**: Optimize project ruleset (PROJECT-SPECIFIC ANALYSIS)
 ```bash
 /optimize-ruleset
 ```
+- Target: `.claude/CLAUDE.md` (this project)
+- Checkpoint: `.claude/CHECKPOINT` (this project)
+- History filter: Only entries from this project
 
-**"personal"**: Optimize personal ruleset
+**"personal"**: Optimize personal ruleset (ALL PROJECTS)
 ```bash
 /optimize-ruleset personal
 ```
+- Target: `~/.claude/CLAUDE.md`
+- Checkpoint: `~/.claude/CHECKPOINT`
+- History filter: All entries from all projects
 
 **Flags**:
 - `--no-history`: Skip history analysis
 - `--history-only`: Only analyze history, don't modify ruleset
 
-**What It Does**:
-1. ✅ Reads your chat history (incrementally)
-2. ✅ Detects patterns: repeated mistakes, user corrections, workflow gaps
-3. ✅ Analyzes target CLAUDE.md for issues
-4. ✅ Provides prioritized recommendations (HIGH/MEDIUM/LOW)
-5. ✅ Can apply fixes or show draft
-6. ✅ Updates CHECKPOINT to avoid re-analyzing
+---
 
-**Example Patterns It Detects**:
-- Manual .venv paths instead of `uv run python`
-- User corrections (learn from mistakes)
-- Forgotten workflow steps (STATUS.md, git status)
-- Wrong tool usage (bash grep instead of Grep tool)
-- Documentation that doesn't match reality
+## 🎯 Checkpoint System Deep Dive
+
+### Multi-Line Format
+
+**File structure** (supports multiple commands):
+```
+optimize-ruleset: 2025-11-04T14:47:09Z
+commit-command: 2025-11-03T10:00:00Z
+other-command: 2025-11-02T15:30:00Z
+```
+
+Each command maintains its own checkpoint line. No conflicts!
+
+### File Locations
+
+```
+~/.claude/
+├── CHECKPOINT                    # For personal ruleset only
+│   Content: optimize-ruleset: 2025-11-04T14:47:09Z
+└── CLAUDE.md                     # Personal ruleset
+
+/c/Projects/Personal/agent-spike/
+├── .claude/
+│   ├── CHECKPOINT                # For THIS project (NEW!)
+│   │   Content: optimize-ruleset: 2025-11-04T14:47:09Z
+│   └── CLAUDE.md                 # Project ruleset
+
+/c/Projects/OtherProject/
+├── .claude/
+│   ├── CHECKPOINT                # Separate checkpoint!
+│   └── CLAUDE.md                 # Different project
+```
+
+### History Filtering
+
+**history.jsonl structure**:
+```json
+{
+  "display": "user command",
+  "timestamp": 1762266888953,
+  "project": "C:\\Projects\\Personal\\agent-spike",
+  "sessionId": "..."
+}
+```
+
+**Project mode filtering**:
+```
+For entry in history.jsonl:
+  IF timestamp > checkpoint
+  AND project == current_project_path:
+    Include in analysis
+```
+
+**Personal mode filtering**:
+```
+For entry in history.jsonl:
+  IF timestamp > checkpoint:
+    Include in analysis (any project)
+```
 
 ---
 
-## 🎯 How the Checkpoint System Works
+## 🔄 How the Improvement Loop Works
+
+### Per-Project Learning
 
 ```
-Session 1 (2025-11-04 09:00):
-├─ No CHECKPOINT exists
-├─ Reads ENTIRE history.jsonl
-├─ Detects patterns
-├─ Creates CHECKPOINT: 2025-11-04T09:16:23Z
-└─ Learns: "Use uv run python, not manual paths"
+Monday - Work on agent-spike:
+├─ Run: /optimize-ruleset
+├─ Analyzes: Only agent-spike history
+├─ Learns: uv patterns, lesson structure, etc.
+├─ Updates: agent-spike/.claude/CHECKPOINT
+└─ Improves: agent-spike/.claude/CLAUDE.md
 
-Session 2 (2025-11-04 14:00):
-├─ CHECKPOINT exists: 2025-11-04T09:16:23Z
-├─ Reads ONLY history AFTER 09:16:23Z
-├─ Detects new patterns
-├─ Updates CHECKPOINT: 2025-11-04T14:47:09Z
-└─ Learns: "Check STATUS.md before starting"
+Tuesday - Work on web-app:
+├─ Run: /optimize-ruleset
+├─ Analyzes: Only web-app history (independent!)
+├─ Learns: npm patterns, React patterns, etc.
+├─ Updates: web-app/.claude/CHECKPOINT
+└─ Improves: web-app/.claude/CLAUDE.md
 
-Session 3 (2025-11-05):
-├─ CHECKPOINT: 2025-11-04T14:47:09Z
-├─ Reads ONLY history from yesterday forward
-├─ Continues learning incrementally
-└─ Builds on all previous lessons
+Wednesday - Optimize personal ruleset:
+├─ Run: /optimize-ruleset personal
+├─ Analyzes: History from BOTH projects
+├─ Learns: Cross-project patterns
+├─ Updates: ~/.claude/CHECKPOINT
+└─ Improves: ~/.claude/CLAUDE.md
 ```
 
-**Benefits**:
-- ⚡ Fast: Don't re-analyze same history
-- 📈 Incremental: Learn from each session
-- 🧠 Cumulative: Knowledge builds over time
-- 🎓 Educational: Turn mistakes into rules
+**Result**: Each project evolves independently based on its own work!
+
+---
+
+## 💡 Example: What Gets Learned
+
+### From agent-spike Project
+
+**Pattern 1: Manual .venv Paths** (Project-specific)
+```
+History shows: Used ../../../.venv/Scripts/python.exe in agent-spike
+Context: Project uses uv package manager
+Lesson: Use `uv run python` instead
+→ Adds rule to agent-spike/.claude/CLAUDE.md (Python section)
+```
+
+**Pattern 2: Lesson Structure** (Project-specific)
+```
+History shows: Work in .spec/lessons/ directories
+Context: Learning spike with progressive lessons
+Lesson: Always check STATUS.md before starting
+→ Adds rule to agent-spike/.claude/CLAUDE.md (Workflow)
+```
+
+### From web-app Project
+
+**Pattern 3: npm Scripts** (Different project, different patterns!)
+```
+History shows: Using npm commands in web-app
+Context: Node.js project with package.json
+Lesson: Use `npm run` for all scripts
+→ Adds rule to web-app/.claude/CLAUDE.md (NOT agent-spike!)
+```
+
+### Cross-Project Patterns
+
+**Pattern 4: Git Workflow** (Applies everywhere)
+```
+History shows: Forgetting to check git status in multiple projects
+Context: Occurs across all projects
+Lesson: Always check git status before starting work
+→ Adds rule to ~/.claude/CLAUDE.md (Personal > Git Workflow)
+```
 
 ---
 
@@ -116,79 +250,47 @@ Session 3 (2025-11-05):
 ```
 ~/.claude/                              # Your personal Claude directory
 ├── CLAUDE.md                          # Personal ruleset (231 lines)
-├── CHECKPOINT                         # Last history analysis (timestamp)
+├── CHECKPOINT                         # Personal checkpoint (multi-line)
+│   Content: optimize-ruleset: 2025-11-04T14:47:09Z
 ├── COMMANDS-QUICKSTART.md             # This file
 ├── history.jsonl                      # Your chat history (~19KB)
 └── commands/
-    ├── optimize-ruleset.md            # The command (670 lines)
-    ├── commit.md                      # Commit command (exists)
-    └── README.md                      # Documentation (5.1KB)
+    ├── optimize-ruleset.md            # The command (829 lines, updated!)
+    ├── commit.md                      # Commit command
+    └── README.md                      # Documentation
 
 /c/Projects/Personal/agent-spike/
 └── .claude/
-    └── CLAUDE.md                      # Project ruleset (354 lines, optimized!)
+    ├── CHECKPOINT                     # Project checkpoint (NEW!)
+    │   Content: (will be created on first run)
+    └── CLAUDE.md                      # Project ruleset (354 lines)
 ```
 
 ---
 
 ## 🔍 What the Command Analyzes
 
-### From History (Meta-Learning)
+### From History (Meta-Learning with Project Filter)
 
-**Pattern Detection**:
-- ✅ Repeated tool usage mistakes
-- ✅ Manual path references (venv, node_modules)
-- ✅ User corrections and clarifications
-- ✅ Missing context checks
-- ✅ Forgotten workflow steps
-- ✅ TODO list management issues
+**Project Mode** (`/optimize-ruleset`):
+- ✅ Only analyzes entries where `project == current_directory`
+- ✅ Patterns specific to this project
+- ✅ Faster (fewer entries to process)
+- ✅ More relevant learnings
 
-**Output**: Suggested rules to prevent future issues
+**Personal Mode** (`/optimize-ruleset personal`):
+- ✅ Analyzes entries from all projects
+- ✅ Cross-project patterns
+- ✅ General best practices
+- ✅ Comprehensive insights
 
-### From Ruleset (Analysis)
-
-**Issue Detection**:
-- ✅ Outdated/inaccurate descriptions
-- ✅ Technical inaccuracies (venv, versions)
-- ✅ Missing critical context
-- ✅ Poor section ordering
-- ✅ Missing Quick Start
-- ✅ Unclear doc relationships
-- ✅ Verbose/redundant content
-
-**Output**: Specific fixes with before/after
-
----
-
-## 💡 Example: What Gets Learned
-
-### From Today's Session
-
-**Pattern 1: Manual .venv Paths**
-```
-History shows: Used ../../../.venv/Scripts/python.exe
-Issue: Brittle, platform-specific, unnecessary
-Lesson: Use `uv run python` instead
-→ Adds rule to project ruleset (Python section)
-```
-
-**Pattern 2: Documentation Inaccuracy**
-```
-History shows: CLAUDE.md claimed "shared .venv" but was hybrid
-Issue: Documentation didn't match reality
-Lesson: Verify technical claims before documenting
-→ Adds rule to personal ruleset (Best Practices)
-```
-
-**Pattern 3: Missing Quick Start**
-```
-History shows: We had to explain how to run things
-Issue: No onboarding for new Claude sessions
-Lesson: Always include Quick Start section
-→ Adds Quick Start to project ruleset
-```
-
-These become permanent rules that improve future sessions!
+**Pattern Detection** (same as before):
+- Repeated tool usage mistakes
+- Manual path references
+- User corrections
+- Missing context checks
+- Forgotten workflow steps
+- TODO list management issues
 
 ---
 
@@ -196,137 +298,122 @@ These become permanent rules that improve future sessions!
 
 **Recommended Frequency**:
 
-### Project Ruleset
+### Project Ruleset (`/optimize-ruleset`)
 - ✅ After completing a lesson/milestone
-- ✅ When onboarding to existing project
-- ✅ After discovering project structure issues
-- ✅ When documentation feels outdated
+- ✅ After frustrating sessions (turn pain into rules!)
+- ✅ When discovering project structure
+- ✅ Weekly for active projects
+- ✅ Before major refactorings
 
-### Personal Ruleset
-- ✅ Weekly or bi-weekly
-- ✅ After particularly productive/frustrating sessions
-- ✅ When you notice repeated mistakes
-- ✅ When starting new types of projects
-
-**Best Practice**: Run it now to see what patterns exist from today's session!
+### Personal Ruleset (`/optimize-ruleset personal`)
+- ✅ Bi-weekly or monthly
+- ✅ When you notice repeated patterns across projects
+- ✅ After working on new types of projects
+- ✅ To consolidate learnings from multiple projects
 
 ---
 
 ## 🚦 Usage Examples
 
-### Example 1: Optimize Current Project
+### Example 1: First Run on agent-spike
 ```bash
-# You're in /c/Projects/Personal/agent-spike
+cd /c/Projects/Personal/agent-spike
 /optimize-ruleset
 
-# Output:
-# - Analyzes history since checkpoint
-# - Finds 3 patterns (manual paths, doc inaccuracy, missing Quick Start)
-# - Examines .claude/CLAUDE.md (already optimized from today!)
-# - Shows: "Ruleset is well-structured. Added 3 rules from history."
+Output:
+- No checkpoint found - analyzing ALL history for this project
+- Found 47 entries from agent-spike
+- Detected: Manual .venv paths, missing Quick Start, etc.
+- Created: .claude/CHECKPOINT with timestamp
+- Next run will only analyze NEW history
 ```
 
-### Example 2: Optimize Personal Ruleset
+### Example 2: Second Run on agent-spike
+```bash
+cd /c/Projects/Personal/agent-spike
+/optimize-ruleset
+
+Output:
+- Checkpoint found: 2025-11-04T10:00:00Z
+- Analyzing 12 NEW entries since checkpoint
+- Detected: 1 new pattern (forgot STATUS.md check)
+- Updated: .claude/CHECKPOINT with new timestamp
+- Incremental improvement!
+```
+
+### Example 3: Different Project
+```bash
+cd /c/Projects/OtherProject
+/optimize-ruleset
+
+Output:
+- No checkpoint found (first run for THIS project)
+- Analyzing ALL history for other-project
+- Independent from agent-spike checkpoint!
+- Creates: other-project/.claude/CHECKPOINT
+- Learns patterns specific to this project
+```
+
+### Example 4: Personal Ruleset
 ```bash
 # From any project
 /optimize-ruleset personal
 
-# Output:
-# - Analyzes history
-# - Examines ~/.claude/CLAUDE.md
-# - Suggests: Add patterns from recent projects
-# - Updates: Python section, Git workflow, Best practices
-```
-
-### Example 3: Just Analyze History
-```bash
-/optimize-ruleset --history-only
-
-# Output:
-# - Only runs history analysis
-# - Shows patterns detected
-# - Suggests rules to add
-# - Doesn't modify any files
-```
-
-### Example 4: Just Analyze Ruleset
-```bash
-/optimize-ruleset --no-history
-
-# Output:
-# - Skips history (faster)
-# - Only examines ruleset structure
-# - Useful for quick checks
+Output:
+- Checkpoint: ~/.claude/CHECKPOINT
+- Analyzing history from ALL projects
+- Found patterns that occur across projects
+- Updates personal best practices
 ```
 
 ---
 
 ## 🎁 What You Get
 
-### Self-Improving System
-Every session teaches the system:
-- Mistakes → Rules
-- Corrections → Guidelines
-- Frustrations → Workflow improvements
-- Discoveries → Best practices
+### Project-Specific Learning
+- Each project learns from its own history
+- No redundant analysis of other projects
+- Faster, more relevant insights
+- Patterns stay contextual
 
-### Better Claude Sessions
-- Fewer repeated mistakes
-- Faster onboarding to projects
-- Accurate documentation
-- Context-aware guidance
+### Cross-Project Learning
+- Personal ruleset captures universal patterns
+- Best practices that apply everywhere
+- Consistent behavior across projects
 
-### Knowledge Persistence
-- Lessons survive across sessions
-- Patterns become permanent rules
-- Experience accumulates over time
-
----
-
-## 🔄 The Improvement Loop
-
-```
-Session Work
-    ↓
-History Captured
-    ↓
-Run /optimize-ruleset
-    ↓
-Patterns Detected
-    ↓
-Rules Generated
-    ↓
-Ruleset Updated
-    ↓
-Next Session Improved
-    ↓
-[Loop repeats, getting better each time]
-```
+### Incremental Improvement
+- Checkpoint prevents re-analyzing same history
+- Each session adds only new insights
+- Builds on previous learnings
+- Gets smarter over time
 
 ---
 
 ## 📋 Quick Command Reference
 
 ```bash
-# Optimize project ruleset (most common)
+# Optimize current project (most common)
 /optimize-ruleset
 
 # Optimize personal ruleset
 /optimize-ruleset personal
 
-# Skip history analysis (faster)
+# Skip history (faster, just analyze ruleset)
 /optimize-ruleset --no-history
 
 # Only analyze history (no changes)
 /optimize-ruleset --history-only
 
-# Check current checkpoint
+# Check project checkpoint
+cat .claude/CHECKPOINT
+
+# Check personal checkpoint
 cat ~/.claude/CHECKPOINT
 
 # View command details
 cat ~/.claude/commands/README.md
 
-# List all personal commands
+# List all commands
 ls ~/.claude/commands/
 ```
 
@@ -337,28 +424,78 @@ ls ~/.claude/commands/
 **Recommended First Action**:
 
 ```bash
-# Run on current project to see it in action
+# Run on current project
 /optimize-ruleset
 ```
 
 This will:
-1. Analyze today's chat history
-2. Detect patterns from our session
-3. Examine the project CLAUDE.md (which we just optimized!)
+1. Create `.claude/CHECKPOINT` for this project
+2. Analyze history entries from this project only
+3. Detect patterns from agent-spike work
 4. Show what it learned
-5. Update CHECKPOINT for next time
+5. Update checkpoint for next time
 
-**Expected**: It should find the patterns we discussed (manual .venv paths, documentation accuracy, Quick Start sections) and suggest rules!
+**Expected findings**:
+- Manual .venv path usage (we discussed this!)
+- Documentation accuracy issues (we fixed these!)
+- Missing Quick Start (we added it!)
+- Other patterns from today's work
+
+---
+
+## 🔄 Migration Note
+
+**Old checkpoint**: `~/.claude/CHECKPOINT` (single-line format)
+**New format**: Multi-line format
+
+The global checkpoint has been converted to multi-line format:
+```
+Before: 2025-11-04T14:47:09Z
+After:  optimize-ruleset: 2025-11-04T14:47:09Z
+```
+
+**For project work**: Future runs of `/optimize-ruleset` (no parameter) will create project-specific checkpoints in `.claude/CHECKPOINT`.
+
+**For personal work**: `/optimize-ruleset personal` continues to use `~/.claude/CHECKPOINT`.
+
+---
+
+## ✨ Summary
+
+### Key Improvements
+
+1. **Project-Aware**: Each project tracks its own optimization history
+2. **No Redundancy**: Don't re-analyze other projects' history
+3. **Faster**: Fewer entries to process per run
+4. **More Relevant**: Patterns are project-specific
+5. **Extensible**: Multi-line format supports future commands
+6. **Independent**: Projects improve independently
+
+### The Power of Project Awareness
+
+```
+Without project awareness:
+└─ One global checkpoint
+└─ Analyzes ALL history every time
+└─ Patterns mixed across projects
+└─ Slower, less relevant
+
+With project awareness:
+└─ Per-project checkpoints
+└─ Analyzes only project history
+└─ Patterns contextual
+└─ Faster, more relevant
+```
 
 ---
 
 **Questions?** Check:
 - `~/.claude/commands/README.md` - Full documentation
-- `~/.claude/commands/optimize-ruleset.md` - Complete command logic
+- `~/.claude/commands/optimize-ruleset.md` - Complete command logic (829 lines!)
 - `~/.claude/CLAUDE.md` - Your personal ruleset
 
 **Happy optimizing!** 🚀
 
 ---
 
-**Note**: This is a **meta-learning** system. It learns from your actual work and improves over time. The more you use it, the better it gets!
+**Note**: This is a **meta-learning** system with **project awareness**. Each project learns from its own work and improves independently. The more you use it, the smarter each project becomes!
