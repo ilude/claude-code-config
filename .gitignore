@@ -19,6 +19,7 @@ projects/
 todos/
 debug/
 shell-snapshots/
+.specstory/
 
 # IDE and analytics
 ide/
