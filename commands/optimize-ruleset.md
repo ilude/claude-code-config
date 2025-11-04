@@ -1,11 +1,11 @@
 ---
-description: Analyze and optimize CLAUDE.md ruleset files with meta-learning from chat history
+description: Analyze and optimize CLAUDE.md ruleset files with project-aware meta-learning from chat history
 ---
 
 # Optimize Ruleset Command
 
 This command analyzes and optimizes CLAUDE.md ruleset files (project or personal) by:
-1. Learning from chat history patterns (meta-learning)
+1. Learning from chat history patterns (meta-learning with PROJECT-AWARE filtering)
 2. Detecting issues in current ruleset
 3. Providing prioritized recommendations
 4. Applying fixes to create optimized version
@@ -13,16 +13,40 @@ This command analyzes and optimizes CLAUDE.md ruleset files (project or personal
 ## Parameters
 
 - **No parameter**: `/optimize-ruleset` → Optimize **project** ruleset at `.claude/CLAUDE.md`
+  - Analyzes history FOR THIS PROJECT ONLY
+  - Checkpoint: `.claude/CHECKPOINT` (project-specific)
+
 - **"personal"**: `/optimize-ruleset personal` → Optimize **personal** ruleset at `~/.claude/CLAUDE.md`
+  - Analyzes history ACROSS ALL PROJECTS
+  - Checkpoint: `~/.claude/CHECKPOINT` (global)
+
 - **"--no-history"**: Skip history analysis (just analyze ruleset)
 - **"--history-only"**: Only analyze history, suggest rules (don't modify ruleset)
+
+## Checkpoint System
+
+**Multi-line format** supporting multiple checkpoint types:
+```
+optimize-ruleset: 2025-11-04T14:47:09Z
+commit-command: 2025-11-03T10:00:00Z
+other-command: 2025-11-02T15:30:00Z
+```
+
+**Location**:
+- Project checkpoints: `<project>/.claude/CHECKPOINT`
+- Personal checkpoint: `~/.claude/CHECKPOINT`
+
+**Why project-specific?**
+- Each project tracks its own optimization history
+- No re-analysis of unrelated project history
+- Patterns detected are specific to project context
 
 ## Process Overview
 
 You will execute these phases in order:
 
 ### Phase 1: Determine Target & Context
-### Phase 2: History Analysis (Meta-Learning)
+### Phase 2: History Analysis (Meta-Learning with Project Filtering)
 ### Phase 3: Ruleset Analysis
 ### Phase 4: Unified Recommendations
 ### Phase 5: Apply Optimizations (if approved)
@@ -34,20 +58,50 @@ You will execute these phases in order:
 ### Step 1.1: Parse Parameters
 
 Check the parameter provided:
-- No parameter → Target: `.claude/CLAUDE.md` (project ruleset)
-- "personal" → Target: `~/.claude/CLAUDE.md` (personal ruleset)
+- No parameter → **Project mode**: Target `.claude/CLAUDE.md`, Checkpoint `.claude/CHECKPOINT`
+- "personal" → **Personal mode**: Target `~/.claude/CLAUDE.md`, Checkpoint `~/.claude/CHECKPOINT`
 - Extract any flags: --no-history, --history-only
 
-### Step 1.2: Verify Target Exists
+### Step 1.2: Get Current Working Directory (Project Mode Only)
+
+**If project mode**, get and normalize the current directory:
+
+```bash
+# Get current directory
+current_dir=$(pwd)
+echo "Current directory: $current_dir"
+
+# Output example: /c/Projects/Personal/agent-spike
+```
+
+**Path normalization** (for Windows compatibility):
+- `C:\Projects\...` → `/c/Projects/...`
+- Forward slashes only
+- Store as: `current_project_path`
+
+### Step 1.3: Determine Checkpoint Path
+
+Based on mode:
+- **Project mode**: `checkpoint_path=".claude/CHECKPOINT"`
+- **Personal mode**: `checkpoint_path="~/.claude/CHECKPOINT"`
+
+Create `.claude` directory if needed:
+```bash
+mkdir -p .claude  # For project mode
+```
+
+### Step 1.4: Verify Target Exists
 
 Check if target file exists:
-- **If exists**: Proceed to analysis
-- **If doesn't exist**:
-  - For project: Offer to create from template
-  - For personal: Offer to create default personal ruleset
-  - Ask user if they want to create it
+- **Project mode**: `ls .claude/CLAUDE.md`
+- **Personal mode**: `ls ~/.claude/CLAUDE.md`
 
-### Step 1.3: Gather Project Context (if project ruleset)
+**If doesn't exist**:
+- Offer to create from template
+- Ask user if they want to create it
+- Skip if user declines
+
+### Step 1.5: Gather Project Context (if project ruleset)
 
 If optimizing project ruleset, gather context by checking:
 
@@ -86,13 +140,16 @@ git log --oneline -5 2>/dev/null
 - Multi-language
 - State: Learning spike, Active development, Production, Archived
 
-### Step 1.4: Output Context Summary
+### Step 1.6: Output Context Summary
 
 Display what you discovered:
 ```markdown
 ## Context Analysis
 
+**Mode**: [Project | Personal]
 **Target**: [.claude/CLAUDE.md | ~/.claude/CLAUDE.md]
+**Checkpoint**: [.claude/CHECKPOINT | ~/.claude/CHECKPOINT]
+**Current Directory**: [/c/Projects/Personal/agent-spike] (project mode only)
 **Project Type**: [Python learning spike, Node production app, etc.]
 **Package Manager**: [uv, npm, cargo, etc.]
 **Key Directories**: [.spec/lessons/, src/, tests/, etc.]
@@ -102,44 +159,107 @@ Display what you discovered:
 
 ---
 
-## PHASE 2: History Analysis (Meta-Learning)
+## PHASE 2: History Analysis (Meta-Learning with Project Filtering)
 
 **Skip this phase if --no-history flag is present**
 
 ### Step 2.1: Read CHECKPOINT File
 
-Try to read `~/.claude/CHECKPOINT`:
+Try to read the checkpoint file:
 ```bash
-cat ~/.claude/CHECKPOINT 2>/dev/null
+cat $checkpoint_path 2>/dev/null
 ```
 
-**If exists**: Parse the timestamp (ISO 8601 format: 2025-11-04T09:16:23Z)
-**If doesn't exist**: Set checkpoint_timestamp = 0 (analyze all history)
-
-### Step 2.2: Read History File
-
-Read `~/.claude/history.jsonl`:
-```bash
-cat ~/.claude/history.jsonl
+Example content:
+```
+optimize-ruleset: 2025-11-04T14:47:09Z
+commit-command: 2025-11-03T10:00:00Z
 ```
 
-**Format**: JSON Lines (one JSON object per line)
-**Fields**:
-- `display`: User's command/input
-- `timestamp`: Unix timestamp in milliseconds
-- `project`: Working directory
-- `sessionId`: Session identifier
-- `pastedContents`: Any pasted content
+### Step 2.2: Parse optimize-ruleset Checkpoint
 
-### Step 2.3: Filter by Checkpoint
+Extract the `optimize-ruleset:` line:
+```bash
+checkpoint_timestamp=$(grep "^optimize-ruleset:" $checkpoint_path 2>/dev/null | cut -d' ' -f2)
 
-For each line in history.jsonl:
-1. Parse JSON
-2. Extract timestamp
-3. If timestamp > checkpoint_timestamp: Include in analysis
-4. If timestamp <= checkpoint_timestamp: Skip (already analyzed)
+# If no checkpoint found:
+if [ -z "$checkpoint_timestamp" ]; then
+    checkpoint_timestamp="1970-01-01T00:00:00Z"  # Unix epoch (analyze all history)
+    echo "No checkpoint found - analyzing all history"
+else
+    echo "Checkpoint found: $checkpoint_timestamp"
+fi
+```
 
-Count entries: `X entries since checkpoint` or `Y total entries (first run)`
+Convert to Unix timestamp in milliseconds (history.jsonl uses ms):
+```bash
+# Convert ISO 8601 to Unix timestamp (seconds)
+checkpoint_seconds=$(date -d "$checkpoint_timestamp" +%s 2>/dev/null)
+
+# Convert to milliseconds
+checkpoint_ms=$((checkpoint_seconds * 1000))
+```
+
+### Step 2.3: Read and Filter History
+
+**history.jsonl structure**:
+```json
+{
+  "display": "user command text",
+  "timestamp": 1762266888953,
+  "project": "C:\\Projects\\Personal\\agent-spike",
+  "sessionId": "uuid"
+}
+```
+
+**Filtering logic**:
+
+#### For Project Mode:
+```bash
+# Filter by: timestamp > checkpoint AND project == current_project_path
+# Only analyze history entries from THIS project
+
+while IFS= read -r line; do
+    # Parse JSON fields (use python or jq if available)
+    entry_timestamp=$(echo "$line" | python -c "import sys,json; print(json.load(sys.stdin)['timestamp'])" 2>/dev/null)
+    entry_project=$(echo "$line" | python -c "import sys,json; print(json.load(sys.stdin).get('project', ''))" 2>/dev/null)
+
+    # Normalize entry_project path (Windows to Unix format)
+    entry_project=$(echo "$entry_project" | sed 's|\\|/|g' | sed 's|^C:|/c|' | sed 's|^D:|/d|')
+
+    # Check conditions
+    if [ "$entry_timestamp" -gt "$checkpoint_ms" ] && [ "$entry_project" == "$current_project_path" ]; then
+        # Include this entry in analysis
+        echo "$line" >> /tmp/filtered_history.jsonl
+    fi
+done < ~/.claude/history.jsonl
+```
+
+#### For Personal Mode:
+```bash
+# Filter by: timestamp > checkpoint ONLY
+# Analyze history from ALL projects
+
+while IFS= read -r line; do
+    entry_timestamp=$(echo "$line" | python -c "import sys,json; print(json.load(sys.stdin)['timestamp'])" 2>/dev/null)
+
+    if [ "$entry_timestamp" -gt "$checkpoint_ms" ]; then
+        # Include this entry (any project)
+        echo "$line" >> /tmp/filtered_history.jsonl
+    fi
+done < ~/.claude/history.jsonl
+```
+
+Count entries:
+```bash
+entry_count=$(wc -l < /tmp/filtered_history.jsonl 2>/dev/null || echo "0")
+echo "Entries to analyze: $entry_count"
+```
+
+**Report**:
+- Project mode: "Analyzing X entries from this project since [checkpoint]"
+- Personal mode: "Analyzing X entries from all projects since [checkpoint]"
+- First run: "Analyzing all history (no checkpoint found)"
 
 ### Step 2.4: Detect Issue Patterns
 
@@ -213,6 +333,7 @@ For each pattern detected, create a suggested rule:
 ```markdown
 ### Pattern: [Name]
 - **Detected**: [X times in Y sessions]
+- **Project Context**: [This project | All projects]
 - **Example**: [Quote from history]
 - **Issue**: [What went wrong]
 - **Suggested Rule**: [Specific guidance]
@@ -223,12 +344,40 @@ For each pattern detected, create a suggested rule:
 
 ### Step 2.6: Update CHECKPOINT
 
-After analysis, write current timestamp to `~/.claude/CHECKPOINT`:
+After analysis, update the checkpoint file with the current timestamp.
+
+**Read existing checkpoint**:
 ```bash
-date -u +"%Y-%m-%dT%H:%M:%SZ" > ~/.claude/CHECKPOINT
+current_content=$(cat $checkpoint_path 2>/dev/null)
 ```
 
-**Format**: ISO 8601 UTC timestamp
+**Update optimize-ruleset line**:
+```bash
+# Generate new timestamp
+new_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Remove old optimize-ruleset line (if exists)
+other_lines=$(echo "$current_content" | grep -v "^optimize-ruleset:" 2>/dev/null)
+
+# Create new content
+{
+    echo "$other_lines"
+    echo "optimize-ruleset: $new_timestamp"
+} > $checkpoint_path
+
+# Ensure proper formatting (remove empty lines at start)
+sed -i '/^$/d' $checkpoint_path 2>/dev/null || true
+```
+
+**Verify**:
+```bash
+echo "Updated checkpoint:"
+cat $checkpoint_path
+```
+
+**Result**:
+- Project mode: `.claude/CHECKPOINT` updated for this project only
+- Personal mode: `~/.claude/CHECKPOINT` updated globally
 
 ---
 
@@ -341,12 +490,12 @@ For each issue:
 ### Step 4.1: Combine History + Ruleset Analysis
 
 Merge findings:
-- History-derived rules (from Phase 2)
+- History-derived rules (from Phase 2, filtered by project)
 - Ruleset issues (from Phase 3)
 
 Look for overlap:
 - Did history reveal same issue ruleset has?
-- Example: History shows .venv confusion + Ruleset documents .venv wrong = HIGH priority
+- Example: History shows .venv confusion + Ruleset documents .venv wrong = CRITICAL priority
 
 ### Step 4.2: Final Prioritization
 
@@ -354,10 +503,11 @@ Re-prioritize based on:
 - Frequency (issue appeared multiple times)
 - Severity (blocks work, causes errors)
 - Impact (affects many sessions)
+- Context (project-specific patterns more relevant for project ruleset)
 
 **Priority Levels**:
 - **CRITICAL**: Issue appeared in history AND ruleset, causes actual problems
-- **HIGH**: Technical inaccuracies, missing critical info, history patterns with 3+ occurrences
+- **HIGH**: Technical inaccuracies, missing critical info, history patterns with 3+ occurrences in this project
 - **MEDIUM**: Structural issues, missing onboarding, history patterns with 2 occurrences
 - **LOW**: Polish, formatting, history patterns with 1 occurrence
 
@@ -368,22 +518,29 @@ Output in this format:
 ```markdown
 # Ruleset Optimization Analysis
 
+**Mode**: [Project | Personal]
 **Target**: [Path to CLAUDE.md]
-**Project Type**: [Detected type]
-**Current State**: [X lines, Y sections]
+**Checkpoint**: [Path to CHECKPOINT]
+**Current Directory**: [PWD] (project mode only)
 
 ---
 
 ## Part 1: Meta-Learning from History
 
+**History Scope**:
+- **Project mode**: Only entries from this project
+- **Personal mode**: Entries from all projects
+
 **History Analyzed**: [X entries since checkpoint | Y total entries (first run)]
 **Checkpoint**: [Previous: YYYY-MM-DD | None (first run)]
 **Updated Checkpoint**: [Current timestamp]
+**Projects Included**: [Current project only | All projects]
 
 ### Patterns Detected
 
 #### Pattern: [Name] (Priority: HIGH/MEDIUM/LOW)
 - **Frequency**: [X occurrences across Y sessions]
+- **Project Context**: [This project | All projects]
 - **Example from History**:
   ```
   [Quote or description]
@@ -454,6 +611,12 @@ Output in this format:
 - Add Quick Start section
 - Condense [section Z]
 - Add rules from history to [section W]
+
+**Checkpoint Status**:
+- Location: [.claude/CHECKPOINT | ~/.claude/CHECKPOINT]
+- Previous: [timestamp | None]
+- Updated: [new timestamp]
+- Next run will analyze only NEW history since this timestamp
 
 ---
 
@@ -554,86 +717,77 @@ After optimization, CLAUDE.md should generally follow:
 
 ---
 
-## Example: Pattern Detection Logic
+## Path Normalization
 
-When analyzing history, use these heuristics:
-
-### Detecting Manual .venv Paths
-
-```javascript
-// Pseudocode
-if (entry.display.includes('.venv/Scripts/python') ||
-    entry.display.includes('.venv/bin/python') ||
-    entry.display.includes('../.venv/')) {
-
-    pattern = "Manual virtual environment paths"
-    issue = "Using explicit venv paths instead of tool commands"
-    rule = "Always use `uv run python` / `poetry run` / etc."
-    priority = HIGH if (occurrences >= 3) else MEDIUM
+**Windows Path Handling**:
+```bash
+# Convert Windows paths to Unix format for comparison
+normalize_path() {
+    local path="$1"
+    # Convert backslashes to forward slashes
+    path=$(echo "$path" | sed 's|\\|/|g')
+    # Convert drive letters: C: → /c
+    path=$(echo "$path" | sed 's|^C:|/c|I' | sed 's|^D:|/d|I')
+    echo "$path"
 }
-```
 
-### Detecting User Corrections
+# Usage:
+entry_project=$(normalize_path "$entry_project")
+current_project=$(normalize_path "$current_project")
 
-```javascript
-// Pseudocode
-correction_keywords = ["no", "actually", "incorrect", "wrong", "that's not"]
-
-if (entry.display.toLowerCase().startsWith(correction_keywords)) {
-    pattern = "User correction - something was misunderstood"
-    // Look at previous entry to see what was corrected
-    lesson = analyze_what_was_corrected(entry, previous_entry)
-    rule = "Verify [specific thing] before assuming"
-    priority = depends on severity
-}
-```
-
-### Detecting Forgotten Workflow Steps
-
-```javascript
-// Pseudocode
-reminder_keywords = ["remember to", "don't forget", "make sure to", "you should"]
-
-if (entry.display.includes(reminder_keywords)) {
-    pattern = "User had to remind about workflow step"
-    step = extract_workflow_step(entry.display)
-    rule = "Add to workflow checklist: " + step
-    priority = MEDIUM
-}
+# Now compare
+if [ "$entry_project" == "$current_project" ]; then
+    # Match!
+fi
 ```
 
 ---
 
 ## Edge Cases
 
-### Case 1: CHECKPOINT very old (>30 days)
+### Case 1: Project has no .claude directory
+- Command creates it: `mkdir -p .claude`
+- Creates CHECKPOINT in new directory
+- Creates CLAUDE.md from template
+
+### Case 2: history.jsonl has no project field
+- Older entries might not have this field
+- Treat as "unknown project"
+- For project mode: Skip these entries
+- For personal mode: Include these entries
+
+### Case 3: Path normalization issues
+- Windows: `C:\Projects\...` vs `/c/Projects/...`
+- Solution: Normalize all paths before comparison
+- Case insensitive on Windows
+
+### Case 4: Moving project directory
+- Checkpoint is project-relative: `.claude/CHECKPOINT`
+- Moves with project
+- History entries have old path
+- No matches until new work generates new history with new path
+- **Solution**: Old history not analyzed, only new history with new path
+
+### Case 5: Multiple checkpoint types
+- optimize-ruleset has its checkpoint
+- commit-command (future) has its checkpoint
+- Both coexist in same CHECKPOINT file
+- Each command reads/updates only its line
+
+### Case 6: CHECKPOINT in wrong location (migration)
+- If `~/.claude/CHECKPOINT` exists but should be project-specific
+- Warn user: "Found global checkpoint, expected project checkpoint"
+- Suggest: "Delete ~/.claude/CHECKPOINT if it was created by mistake"
+
+### Case 7: Very old checkpoint (>30 days)
+- Might have thousands of entries
 - Limit to most recent 1000 entries
-- Note: "Analyzing recent 1000 entries (checkpoint very old)"
+- Note: "Checkpoint very old, analyzing recent 1000 entries"
 
-### Case 2: history.jsonl doesn't exist
+### Case 8: No history entries for project
+- Project mode: "No history found for this project"
 - Skip history analysis
-- Note: "History file not found, skipping meta-learning"
 - Continue with ruleset analysis
-
-### Case 3: history.jsonl format error
-- Try to parse what's possible
-- Note: "Some history entries could not be parsed"
-- Continue with what was successfully parsed
-
-### Case 4: Target ruleset doesn't exist
-- Offer to create from template
-- Use history analysis to inform initial ruleset
-- Ask: "No ruleset found. Would you like me to create one incorporating lessons from your history?"
-
-### Case 5: Target ruleset is excellent
-- Congratulate!
-- Report: "Ruleset is well-structured. Only minor polish suggestions."
-- Still add rules from history if relevant
-
-### Case 6: Command run multiple times quickly
-- CHECKPOINT prevents re-analyzing same history
-- Only new entries analyzed
-- Report: "No new history since last run" if checkpoint is current
 
 ---
 
@@ -642,17 +796,20 @@ if (entry.display.includes(reminder_keywords)) {
 This command succeeds if:
 
 1. ✅ Correctly determines target (project vs personal)
-2. ✅ Parses history.jsonl and filters by checkpoint
-3. ✅ Identifies real patterns (not false positives)
-4. ✅ Generates specific, actionable rules from history
-5. ✅ Detects ruleset issues accurately
-6. ✅ Provides unified recommendations with clear priorities
-7. ✅ Explains rationale (educational, not just "do this")
-8. ✅ Updates CHECKPOINT correctly
-9. ✅ Produces an optimized ruleset that's clearer and more accurate
-10. ✅ Works incrementally (learns from each session)
-11. ✅ Handles edge cases gracefully
-12. ✅ Creates self-improving system over time
+2. ✅ Uses project-specific checkpoint for project mode
+3. ✅ Filters history by project path in project mode
+4. ✅ Filters history globally in personal mode
+5. ✅ Parses multi-line checkpoint format
+6. ✅ Updates checkpoint preserving other entries
+7. ✅ Identifies real patterns (not false positives)
+8. ✅ Generates specific, actionable rules from history
+9. ✅ Detects ruleset issues accurately
+10. ✅ Provides unified recommendations with clear priorities
+11. ✅ Explains rationale (educational, not just "do this")
+12. ✅ Produces an optimized ruleset that's clearer and more accurate
+13. ✅ Works incrementally (learns from each session)
+14. ✅ Handles edge cases gracefully
+15. ✅ Creates self-improving system per-project
 
 ---
 
@@ -663,8 +820,10 @@ This command succeeds if:
 - **Be specific** - "Add Quick Start section" is better than "Improve structure"
 - **Use examples** - Show before/after, quote from history
 - **Respect existing good content** - Don't change what works
-- **Focus on patterns** - 1 occurrence may be random, 3+ is a pattern
+- **Focus on patterns** - 1 occurrence may be random, 3+ is a pattern in this project
 - **Update CHECKPOINT** - Always write new timestamp after history analysis
+- **Preserve other checkpoints** - Don't overwrite commit-command or other entries
+- **Project context matters** - Patterns from THIS project are more relevant than global patterns
 - **Ask before major changes** - Draft first if unsure
 
-Remember: This is meta-learning. You're teaching the system to improve itself based on real experience!
+Remember: This is meta-learning with PROJECT AWARENESS. Each project improves independently based on its own history!
