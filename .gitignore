@@ -1,0 +1,33 @@
+# Sensitive files - NEVER commit
+.credentials.json
+*.key
+*.pem
+*.env
+*secret*
+*password*
+
+# Session data and history
+history.jsonl
+CHECKPOINT
+
+# Session-specific directories
+file-history/
+projects/
+todos/
+debug/
+shell-snapshots/
+
+# IDE and analytics
+ide/
+statsig/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.tmp
