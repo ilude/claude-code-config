@@ -7,13 +7,54 @@ description: Python project workflow guidelines including package management (uv
 
 Guidelines for working with Python projects across different package managers and environments.
 
+## CRITICAL: Virtual Environment Best Practices
+
+**NEVER reference .venv paths manually** (e.g., `.venv/Scripts/python.exe` or `../../../.venv/`).
+
+**ALWAYS use `uv run python`** in uv-based projects, which:
+- Automatically finds project root and correct .venv
+- Works cross-platform (Windows/Linux/Mac)
+- No manual activation needed
+- No path management required
+
+**Prefer shared root .venv** unless project explicitly requires isolation (saves ~7GB per environment).
+
+**Examples:**
+```bash
+# ❌ Don't do this (brittle, platform-specific)
+../../../.venv/Scripts/python.exe script.py
+.venv/bin/python script.py
+
+# ✅ Always do this
+uv run python script.py
+uv run python -m module.cli
+```
+
+**Why this matters**: Manual paths cause cross-platform issues, waste disk space with multiple venvs, and break when project structure changes.
+
+## Python Module CLI Syntax
+
+**When running Python modules as CLI tools**, use the `-m` flag:
+
+```bash
+# ✅ Correct (with -m flag)
+uv run python -m youtube_agent.cli analyze "URL"
+uv run python -m pytest
+uv run python -m pip install package
+
+# ❌ Wrong (missing -m flag - will fail)
+uv run python youtube_agent.cli analyze "URL"
+```
+
+The `-m` flag tells Python to run the module as a script. Without it, Python tries to open the module path as a file, which fails.
+
 ## Package Management
 
 ### UV Package Manager
 - **Prefer uv over pip** when project uses uv
 - Always use `uv run python` in uv-based projects
-- Never manually reference `.venv` paths - let uv handle it
 - Run `uv sync` before executing code in new projects
+- Use `uv add <package>` to add dependencies
 
 ### General Package Management
 - Respect the project's chosen package manager (uv, pip, poetry, pipenv)
@@ -31,7 +72,6 @@ Guidelines for working with Python projects across different package managers an
 
 ### Common Patterns
 - Check project ruleset for venv structure (shared vs per-module)
-- Never use absolute paths to `.venv/bin/python` or `.venv/Scripts/python.exe`
 - Let the tooling abstract the virtual environment
 
 ## Code Style
@@ -78,7 +118,8 @@ Check these files for style preferences:
 - ❌ Activate venvs manually when tools provide `run` commands
 
 **Always do:**
-- ✅ Use tool-specific run commands
+- ✅ Use tool-specific run commands (especially `uv run python`)
+- ✅ Use `-m` flag when running Python modules as CLIs
 - ✅ Check `pyproject.toml` for configuration
 - ✅ Follow project's existing patterns
 - ✅ Respect configured code style
