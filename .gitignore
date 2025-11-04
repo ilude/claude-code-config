@@ -6,6 +6,9 @@
 *secret*
 *password*
 
+# Meta-configuration (auto-generated)
+.claude/
+
 # Session data and history
 history.jsonl
 CHECKPOINT
