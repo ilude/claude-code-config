@@ -3,90 +3,71 @@ description: Create logical git commits with optional push
 argument-hint: [push]
 ---
 
-Create git commits following best practices with security-first approach and logical grouping.
+Automated commit workflow that implements the `git-workflow` skill principles.
 
-## CRITICAL: Security Scan FIRST
+## Prerequisites
 
-BEFORE creating any commits, scan ALL uncommitted changes for security issues:
+**This command implements the workflow defined in the `git-workflow` skill.**
 
-1. **Scan for sensitive data:**
-   - API keys, tokens, passwords (patterns like `API_KEY=`, `TOKEN=`, `sk-`, `Bearer`)
-   - `.env` files, `credentials.json`, `.pem`, `.key`, private keys
-   - Hardcoded secrets in code files
-   - Any file patterns typically containing secrets
+All workflow principles are defined in the skill:
+- Security scanning patterns and requirements
+- Commit organization types (docs, test, feat, fix, etc.)
+- Commit message format with HEREDOC
+- Verification requirements
+- Push behavior rules
+- Safety rules for hooks and amending
 
-2. **If security issues found:**
-   - STOP IMMEDIATELY - do NOT create any commits
-   - Show user which files/lines contain sensitive data
-   - Suggest `.gitignore` entries for sensitive files (e.g., `.env`, `credentials.json`)
-   - Suggest code changes to use environment variables instead of hardcoded secrets
-   - Exit without committing anything
+The skill serves as the source of truth. This command provides procedural automation.
 
-3. **Only proceed if no security issues detected**
+## Execution Flow
 
-## Workflow Steps
+### 1. Security Scan (CRITICAL FIRST STEP)
 
-### 1. Analyze Changes
+**Follow git-workflow skill security requirements:**
+- Scan ALL uncommitted changes for sensitive data
+- Use security patterns defined in git-workflow skill
+- If issues found: STOP, show details, suggest fixes, exit
+- Only proceed if no security issues detected
 
-Run git status, git diff, and git log in parallel to understand:
-- All uncommitted changes (staged and unstaged)
-- File types and purposes
-- Recent commit message style in the repository
+### 2. Analyze Changes
 
-### 2. Group Changes Logically
+**Run in parallel (per git-workflow skill):**
+- `git status` - All uncommitted changes
+- `git diff` - What changed
+- `git log` - Repository commit message style
 
-Group uncommitted changes into logical commits by type/purpose:
+### 3. Group Changes Logically
 
-- **docs**: Documentation (`*.md`, `docs/`, README, comments)
-- **test**: Tests (`test_*.py`, `*_test.py`, `tests/`, `__tests__/`, `*.spec.*`)
-- **build**: Build/CI (`Dockerfile`, `.github/`, `Makefile`, CI configs)
-- **chore**: Configuration (`pyproject.toml`, `package.json`, `.gitignore`, config files)
-- **feat**: New features (new files, new functions/classes, new capabilities)
-- **fix**: Bug fixes (fixes to existing functionality)
-- **refactor**: Code improvements without behavior changes
-- **deps**: Dependencies only (`uv.lock`, `package-lock.json`, `requirements.txt`)
+**Group by commit types defined in git-workflow skill:**
+- Single commit if all changes closely related
+- Multiple commits when changes serve different purposes
+- Use commit types from git-workflow skill (docs, test, feat, fix, refactor, chore, build, deps)
 
-**Important**: If all changes are closely related, a single commit is appropriate. Only split into multiple commits when changes serve different purposes.
+### 4. Create Commits
 
-### 3. Create Commits
+**For each logical group:**
+1. Stage relevant files
+2. Create commit using git-workflow skill message format (HEREDOC)
+3. Follow git-workflow skill commit message guidelines
+4. Apply git-workflow skill safety rules (hooks, amending)
 
-For each logical group:
+### 5. Verify Complete
 
-1. Stage the relevant files for that group
-2. Create a commit with this format (using HEREDOC):
-   ```
-   <prefix>: <concise summary>
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   ```
-
-3. Follow repository's commit message style (from git log analysis)
-4. Focus on "why" rather than "what"
-5. Keep summary concise (1-2 sentences)
-
-**Safety:**
-- Follow git hooks (NEVER use --no-verify)
-- If pre-commit hooks modify files, amend commit only if safe (check authorship first)
-- Never amend commits by other developers
-
-### 4. Verify Complete
-
-After all commits are created:
+**Follow git-workflow skill verification requirements:**
 - Run `git status` to verify NO uncommitted changes remain
 - Show summary of commits created
-- If any files remain uncommitted (and no security issues), create additional commits until everything is committed
+- Create additional commits for any remaining files (if no security issues)
 
-### 5. Push (ONLY if explicitly requested)
+### 6. Push (Argument-Dependent)
 
-**CRITICAL**: ONLY push if the argument "$1" exactly equals "push"
+**CRITICAL**: Only push if argument "$1" exactly equals "push"
 
-- `/commit` - Creates commits, does NOT push
-- `/commit push` - Creates commits AND pushes to remote
+- `/commit` → Creates commits, does NOT push
+- `/commit push` → Creates commits AND pushes to remote
 
-If pushing:
-- Push ONLY after ALL commits are successfully created
+**If pushing:**
+- Follow git-workflow skill push behavior rules
+- Push ONLY after ALL commits successfully created
 - Single push for all commits
 - Verify push succeeds
 
