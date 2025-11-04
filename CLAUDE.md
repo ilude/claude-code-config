@@ -48,22 +48,22 @@
 
 ## Python Projects
 
-### Package Management
-- **Prefer uv over pip** when project uses uv
-- Always use `uv run python` in uv-based projects
-- Never manually reference `.venv` paths - let uv handle it
-- Run `uv sync` before executing code in new projects
+**Python workflow guidelines have been moved to a skill for context efficiency.**
 
-### Virtual Environments
-- Let package managers (uv, poetry, etc.) handle venv automatically
-- Don't activate venvs manually - use tool-specific run commands
-- Check project ruleset for venv structure (shared vs per-module)
+The `python-workflow` skill contains guidelines for:
+- Package management (uv, pip, poetry)
+- Virtual environment handling
+- Python code style preferences
 
-### Code Style
-- Follow project's existing style (check pyproject.toml, .editorconfig)
-- Default to PEP 8 if no project style defined
-- Use type hints when writing new Python code
-- Prefer f-strings over .format() or % formatting
+**The skill auto-activates** when working with Python files or Python projects.
+
+**Quick reference:**
+- Use `uv run python` in uv-based projects (never manual .venv paths)
+- Let package managers handle virtual environments
+- Follow project's code style (check pyproject.toml)
+- Use type hints and f-strings in new code
+
+See `~/.claude/skills/python-workflow/SKILL.md` for complete guidelines.
 
 ---
 
@@ -133,24 +133,23 @@ If found, project ruleset takes precedence over this personal ruleset for:
 
 ## Project Types & Patterns
 
-### Multi-Agent AI Projects
-- Check for `.spec/` or similar learning/experimental directories
-- Look for `STATUS.md` for current progress
-- Each lesson/module may be self-contained
-- Use `uv run python` for execution
-- API keys typically in per-lesson `.env` files
+**Project-specific patterns have been moved to individual skills for context efficiency.**
 
-### Web Projects
-- Check package.json for npm/yarn/pnpm
-- Look for framework-specific configs (next.config.js, vite.config.ts)
-- Respect existing test setup
-- Follow existing component patterns
+Three specialized skills auto-activate based on project type:
 
-### Container-Based Projects
-- Check for Dockerfile, docker-compose.yml
-- Look for Makefile with common commands
-- Check README for build instructions
-- Understand dev vs production environments
+### Multi-Agent AI Projects Skill
+Auto-activates for: AI learning projects, .spec/ directories, STATUS.md, lessons/
+- See `~/.claude/skills/multi-agent-ai-projects/SKILL.md`
+
+### Web Projects Skill
+Auto-activates for: package.json, npm/yarn/pnpm, React, Next.js, Vue, Angular
+- See `~/.claude/skills/web-projects/SKILL.md`
+
+### Container Projects Skill
+Auto-activates for: Dockerfile, docker-compose.yml, Kubernetes, containers
+- See `~/.claude/skills/container-projects/SKILL.md`
+
+**Each skill loads only when relevant**, saving context in unrelated projects.
 
 ---
 
@@ -225,6 +224,15 @@ This personal ruleset was created during a multi-agent learning project. Key lea
 ---
 
 ## Updates
+
+**2025-11-04**: Moved context-specific sections to skills for efficiency
+- Created `python-workflow` skill (~18 lines saved in non-Python projects)
+- Created `multi-agent-ai-projects` skill (~7 lines saved)
+- Created `web-projects` skill (~6 lines saved)
+- Created `container-projects` skill (~6 lines saved)
+- Total potential savings: ~37 lines when working in non-matching projects
+- Skills auto-activate based on project context (files, configs, patterns)
+- Improved token efficiency through progressive disclosure
 
 **2025-11-04**: Moved Git Workflow to skill for context efficiency
 - Created `git-workflow` skill in `~/.claude/skills/git-workflow/`
