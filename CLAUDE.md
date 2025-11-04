@@ -15,6 +15,51 @@
 
 **Precedence**: Local project rulesets override personal preferences when conflicts exist.
 
+**Use these terms precisely** to avoid confusion. When referencing rulesets, always clarify which one.
+
+---
+
+## Context Efficiency Philosophy
+
+**PRIMARY GOAL**: Minimize baseline context, maximize signal-to-noise ratio.
+
+Context efficiency is THE most important optimization principle. Every token counts.
+
+### Strategy
+
+1. **Use skills for domain-specific rules** (git, python, web, containers)
+   - Only loaded when relevant (file patterns, project structure)
+   - 30-70% context reduction when inactive
+   - Progressive disclosure of detailed procedures
+
+2. **Keep CLAUDE.md minimal**
+   - Project overview and purpose (essential context)
+   - Quick start checklist
+   - Project-specific patterns not covered by skills
+   - References to skills for details
+
+3. **Progressive disclosure wins**
+   - Baseline = always-needed info only (~20% of content)
+   - Details = loaded on-demand via skills (~80% of content)
+   - Result: Faster responses, better reasoning
+
+### When Optimizing Rulesets
+
+- Calculate token savings from skill extraction
+- Prioritize moves that save >100 tokens
+- Report context efficiency gains
+- Deduplicate personal/project rulesets
+- Move procedural "how-to" content to skills
+- Keep policy "what/why" content in rulesets
+
+### Example Impact
+
+Without skills: 6,000 tokens baseline
+With skills: 4,000 tokens baseline, 5,500 with skills (when needed)
+Savings: 2,000 tokens baseline (33% reduction)
+
+**This compounds across projects**: As you optimize one project, skills help ALL projects.
+
 ---
 
 ## General Preferences
@@ -43,6 +88,27 @@
 - Run multiple independent tools in parallel when possible
 - Use Task tool for complex multi-step explorations
 - Check for project-specific tool preferences in local ruleset
+
+### File Operations Best Practices (Claude-Specific)
+
+**Reading/Writing Home Directory Files:**
+- Use `os.path.expanduser('~/.claude/file.md')` in Python (NOT `/c/Users/...`)
+- MSYS paths like `/c/Users/...` work in bash but NOT in Python's open()
+- Bash `~/.claude/` works reliably for simple operations
+- For complex content modifications, prefer Task tool over heredocs
+
+**Python String Escaping:**
+- Use raw strings for Windows paths: `r'C:\path\to\file'`
+- Use `chr(92)` for literal backslash or raw strings (NOT `'\'`)
+- Use triple-quoted strings for markdown/code content with quotes
+- Avoid multiple levels of string escaping - use Task tool instead
+
+**When to Use Task Tool vs Direct Operations:**
+- Complex multi-file updates → Task tool (better error handling)
+- Home directory files on Windows → Task tool (path resolution)
+- Content with complex escaping (markdown, code blocks) → Task tool
+- Simple reads/backups → Direct bash/Read tool
+- Single-file edits in project → Edit tool
 
 ---
 
@@ -208,6 +274,12 @@ Auto-activates for: Dockerfile, docker-compose.yml, Kubernetes, containers
 - Creating files without reading project patterns
 - Committing without explicit request
 - Overcomplicating simple tasks
+- Using `/c/Users/...` paths in Python (use `os.path.expanduser('~/')`)
+- Complex bash heredocs for markdown/code content (use Task tool instead)
+- Assuming Read/Edit tools work same as bash for home directory on Windows
+- Unescaped backslashes in Python strings (use raw strings or chr(92))
+- Using Edit/Write for complex multi-file operations (use Task tool)
+- Bash heredocs for content with nested quotes/backticks (fragile escaping)
 
 ---
 
@@ -224,6 +296,14 @@ This personal ruleset was created during a multi-agent learning project. Key lea
 ---
 
 ## Updates
+
+**2025-11-04**: Ruleset optimization via /optimize-ruleset command
+- Added Context Efficiency Philosophy as PRIMARY principle
+- Enhanced terminology section with explicit "local vs project" distinction
+- Updated skill references with CRITICAL rules (uv run, never push, STATUS.md first)
+- Emphasized security-first git workflow
+- Total optimization: ~28% context reduction achieved in agent-spike project
+- Skills now include history-learned rules to prevent future errors
 
 **2025-11-04**: Moved context-specific sections to skills for efficiency
 - Created `python-workflow` skill (~18 lines saved in non-Python projects)
