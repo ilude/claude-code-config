@@ -35,3 +35,6 @@ Thumbs.db
 # Backup files
 *.bak
 *.tmp
+
+# Temporary output directory
+tmp/
