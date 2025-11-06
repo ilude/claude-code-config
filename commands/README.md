@@ -4,6 +4,48 @@ This directory contains custom slash commands available across all your projects
 
 ## Available Commands
 
+### `/analyze-permissions`
+
+**Purpose**: Analyze permission patterns from debug logs and optionally add them to settings.json.
+
+**Location**: `~/.claude/commands/analyze-permissions.md`
+
+**What it does**:
+1. **Pattern Analysis**: Scans debug logs to find frequently-requested permissions
+2. **Safety Classification**: Groups patterns as SAFE or REVIEW NEEDED
+3. **Interactive Approval**: Lets you choose which patterns to add
+4. **Settings Update**: Automatically updates settings.json with approved patterns
+
+**Usage**:
+```bash
+/analyze-permissions
+```
+
+**Example Output**:
+```
+🔍 Analyzing permission patterns...
+
+Found 48 debug logs with 127 permission requests.
+
+📋 NEW PERMISSION SUGGESTIONS:
+
+✅ SAFE patterns (read-only):
+  • Bash(cat:*) - Used 6 times
+  • Bash(git status:*) - Used 5 times
+
+⚠️  REVIEW patterns:
+  • Bash(mkdir:*) - Used 3 times
+
+Add all SAFE patterns? (y/n)
+```
+
+**When to Use**:
+- After using Claude Code for a while with new tools/commands
+- When tired of approving the same commands repeatedly
+- Periodically (weekly/monthly) to optimize your workflow
+
+---
+
 ### `/optimize-ruleset [personal]`
 
 **Purpose**: Analyze and optimize CLAUDE.md ruleset files with meta-learning from chat history.
@@ -167,7 +209,7 @@ When this command is run:
 
 ## Future Command Ideas
 
-- `/commit [push]` - Smart commit with conventional commits
+- `/commit [push]` - Smart commit with conventional commits (✅ Implemented)
 - `/review` - Code review checklist
 - `/test` - Run tests with smart reporting
 - `/doc` - Generate/update documentation
@@ -177,4 +219,4 @@ When this command is run:
 ---
 
 **Created**: 2025-11-04
-**Updated**: 2025-11-04
+**Updated**: 2025-11-06 (Added /analyze-permissions command)
