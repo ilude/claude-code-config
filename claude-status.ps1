@@ -18,19 +18,49 @@ else {
     $model = "no-input"
 }
 
-# Get current directory with ~/ prefix if in home directory
+# Find git repository root by searching up the directory tree
 $currentPath = Get-Location
+$searchPath = $currentPath.Path
+$gitRepoPath = $null
+
+while ($searchPath) {
+    $gitPath = Join-Path $searchPath ".git"
+    if (Test-Path $gitPath) {
+        $gitRepoPath = $searchPath
+        break
+    }
+    $parent = Split-Path $searchPath -Parent
+    if ($parent -eq $searchPath) {
+        break
+    }
+    $searchPath = $parent
+}
+
+# Get directory name to display
 $homePath = $env:USERPROFILE
 
-if ($currentPath.Path.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
-    $relativePath = $currentPath.Path.Substring($homePath.Length)
-    if ($relativePath) {
-        $dir = "~" + $relativePath.Replace('\', '/')
+if ($gitRepoPath) {
+    # Display basename of directory containing .git
+    $basename = Split-Path $gitRepoPath -Leaf
+    
+    # Check if git repo is in home directory and preface with ~/
+    if ($gitRepoPath.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
+        $dir = "~/$basename"
     } else {
-        $dir = "~"
+        $dir = $basename
     }
 } else {
-    $dir = $currentPath.Path.Replace('\', '/')
+    # No git repo found, use current directory with ~/ prefix if in home directory
+    if ($currentPath.Path.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
+        $relativePath = $currentPath.Path.Substring($homePath.Length)
+        if ($relativePath) {
+            $dir = "~" + $relativePath.Replace('\', '/')
+        } else {
+            $dir = "~"
+        }
+    } else {
+        $dir = $currentPath.Path.Replace('\', '/')
+    }
 }
 
 $branch = ""
