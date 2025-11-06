@@ -25,6 +25,9 @@
       "Bash(mkdir:*)",
       "Bash(test:*)",
       "Bash(docker pull:*)",
+      "Bash(jq:*)",
+      "Bash(bash:*)",
+      "Bash(git:*)",
       "WebFetch(domain:code.claude.com)",
       "WebFetch",
       "WebSearch",
@@ -39,10 +42,9 @@
       "SlashCommand"
     ]
   },
-  "model": "opus",
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+    "command": "pwsh -ExecutionPolicy Bypass -File \"C:\\Users\\mglenn\\.claude\\claude-status.ps1\""
   },
   "alwaysThinkingEnabled": true
 }
