@@ -215,6 +215,17 @@ Auto-activates for: package.json, npm/yarn/pnpm, React, Next.js, Vue, Angular
 Auto-activates for: Dockerfile, docker-compose.yml, Kubernetes, containers
 - See `~/.claude/skills/container-projects/SKILL.md`
 
+### Prompt Engineering Skill
+**Manual invoke only** (via `/optimize-prompt` and `/prompt-help` commands)
+- Advanced prompting techniques for transforming basic prompts into high-quality structured prompts
+- 7 techniques: meta-prompting, recursive-review, deep-analyze, multi-perspective, deliberate-detail, reasoning-scaffold, temperature-simulation
+- Based on "The Mental Models of Master Prompters"
+- See `~/.claude/skills/prompt-engineering/SKILL.md`
+
+**Available commands:**
+- `/optimize-prompt [techniques] <prompt>` - Transform prompt using advanced techniques
+- `/prompt-help [technique]` - Documentation and examples
+
 **Each skill loads only when relevant**, saving context in unrelated projects.
 
 ---
@@ -297,43 +308,9 @@ This personal ruleset was created during a multi-agent learning project. Key lea
 
 ## Updates
 
-**2025-11-04**: Ruleset optimization via /optimize-ruleset command
-- Added Context Efficiency Philosophy as PRIMARY principle
-- Enhanced terminology section with explicit "local vs project" distinction
-- Updated skill references with CRITICAL rules (uv run, never push, STATUS.md first)
-- Emphasized security-first git workflow
-- Total optimization: ~28% context reduction achieved in agent-spike project
-- Skills now include history-learned rules to prevent future errors
+**See `~/.claude/CHANGELOG.md` for detailed change history.**
 
-**2025-11-04**: Moved context-specific sections to skills for efficiency
-- Created `python-workflow` skill (~18 lines saved in non-Python projects)
-- Created `multi-agent-ai-projects` skill (~7 lines saved)
-- Created `web-projects` skill (~6 lines saved)
-- Created `container-projects` skill (~6 lines saved)
-- Total potential savings: ~37 lines when working in non-matching projects
-- Skills auto-activate based on project context (files, configs, patterns)
-- Improved token efficiency through progressive disclosure
-
-**2025-11-04**: Moved Git Workflow to skill for context efficiency
-- Created `git-workflow` skill in `~/.claude/skills/git-workflow/`
-- Moved all git workflow guidelines from CLAUDE.md to skill
-- Skill auto-activates when git operations detected
-- Saves ~70 lines of context in non-git sessions
-- Progressive disclosure improves token efficiency
-
-**2025-11-04**: Enhanced Git Workflow section
-- Extracted core principles from `/commit` command
-- Added security-first approach (scan before committing)
-- Documented logical commit grouping (docs, test, feat, fix, etc.)
-- Specified commit message format with HEREDOC
-- Added verification and push behavior rules
-- Ensures consistent git workflow regardless of how commits are requested
-
-**2025-11-04**: Initial creation
-- Added terminology clarification (local vs personal ruleset)
-- Documented uv best practices
-- Added todo list management guidelines
-- Included multi-agent project patterns
+**Latest:** 2025-11-05 - Added Prompt Engineering Skill and Commands
 
 ---
 
