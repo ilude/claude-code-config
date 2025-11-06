@@ -1,67 +1,3 @@
-# Personal Claude Code Ruleset
-
-**Owner**: mglenn
-**Created**: 2025-11-04
-**Purpose**: Personal preferences and patterns for Claude Code across ALL projects
-
----
-
-## Terminology & Scope
-
-**Critical distinction for all Claude sessions:**
-
-- **Personal ruleset**: THIS file (`~/.claude/CLAUDE.md`) - applies to all projects
-- **Local ruleset** / **Project ruleset**: `.claude/CLAUDE.md` in each project directory - project-specific
-
-**Precedence**: Local project rulesets override personal preferences when conflicts exist.
-
-**Use these terms precisely** to avoid confusion. When referencing rulesets, always clarify which one.
-
----
-
-## Context Efficiency Philosophy
-
-**PRIMARY GOAL**: Minimize baseline context, maximize signal-to-noise ratio.
-
-Context efficiency is THE most important optimization principle. Every token counts.
-
-### Strategy
-
-1. **Use skills for domain-specific rules** (git, python, web, containers)
-   - Only loaded when relevant (file patterns, project structure)
-   - 30-70% context reduction when inactive
-   - Progressive disclosure of detailed procedures
-
-2. **Keep CLAUDE.md minimal**
-   - Project overview and purpose (essential context)
-   - Quick start checklist
-   - Project-specific patterns not covered by skills
-   - References to skills for details
-
-3. **Progressive disclosure wins**
-   - Baseline = always-needed info only (~20% of content)
-   - Details = loaded on-demand via skills (~80% of content)
-   - Result: Faster responses, better reasoning
-
-### When Optimizing Rulesets
-
-- Calculate token savings from skill extraction
-- Prioritize moves that save >100 tokens
-- Report context efficiency gains
-- Deduplicate personal/project rulesets
-- Move procedural "how-to" content to skills
-- Keep policy "what/why" content in rulesets
-
-### Example Impact
-
-Without skills: 6,000 tokens baseline
-With skills: 4,000 tokens baseline, 5,500 with skills (when needed)
-Savings: 2,000 tokens baseline (33% reduction)
-
-**This compounds across projects**: As you optimize one project, skills help ALL projects.
-
----
-
 ## General Preferences
 
 ### Communication Style
@@ -230,58 +166,14 @@ Auto-activates for: Dockerfile, docker-compose.yml, Kubernetes, containers
 
 ---
 
-## Session Management
-
-### Starting New Sessions
-1. Check for local project ruleset (`.claude/CLAUDE.md`)
-2. Read project README if available
-3. Check git status for current state
-4. Look for STATUS.md or similar progress tracking
-5. Verify dependencies are installed
-
-### Resuming Work
-1. Review recent git commits for context
-2. Check for uncommitted changes
-3. Read STATUS.md or project docs for current state
-4. Ask user for context if unclear
-5. Verify environment still works (run tests)
-
-### Before Ending Sessions
-1. Update STATUS.md if project uses it
-2. Complete or document in-progress todos
-3. Commit work if user requested it
-4. Note any blockers or next steps
-
----
-
-## Security & Privacy
-
-### Never Commit
-- API keys, tokens, credentials
-- `.env` files
-- Private keys, certificates
-- Passwords, secrets
-- Personal information
-
-### Safe Practices
-- Always use `.gitignore` for sensitive files
-- Warn user if they request committing secrets
-- Use environment variables for configuration
-- Check for exposed credentials before committing
-
----
-
 ## Learning & Improvement
 
 ### Patterns to Remember
-- `uv run python` for uv-based projects (not manual .venv paths)
-- Check STATUS.md before starting work
-- Read project ruleset first
+- `uv run python` for uv-based projects
 - Ask for clarification over assumptions
 
 ### Common Mistakes to Avoid
 - Assuming project structure without checking
-- Using system Python instead of project venv
 - Creating files without reading project patterns
 - Committing without explicit request
 - Overcomplicating simple tasks
@@ -296,22 +188,13 @@ Auto-activates for: Dockerfile, docker-compose.yml, Kubernetes, containers
 
 ## Notes
 
-This personal ruleset was created during a multi-agent learning project. Key learnings:
+Key learnings:
 
-1. **Always check for local project ruleset** - It contains project-specific critical info
-2. **uv vs pip** - Many modern projects use uv; respect that choice
-3. **Virtual environments** - Let tools manage them, don't reference manually
-4. **STATUS.md pattern** - Some projects use this for progress tracking
-5. **Terminology matters** - Be precise about "local" vs "personal" rulesets
+- **Always check for local project ruleset** - It contains project-specific critical info
+- **uv vs pip** - Many modern projects use uv; respect that choice
+- **Virtual environments** - Let tools manage them, don't reference manually
+- **Terminology matters** - Be precise about "local" vs "personal" rulesets
 
 ---
-
-## Updates
 
 **See `~/.claude/CHANGELOG.md` for detailed change history.**
-
-**Latest:** 2025-11-05 - Added Prompt Engineering Skill and Commands
-
----
-
-**For project-specific guidance, always check `.claude/CLAUDE.md` in the project directory first!**
