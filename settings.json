@@ -44,7 +44,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "pwsh -ExecutionPolicy Bypass -File \"claude-status.ps1\""
+    "command": "pwsh -ExecutionPolicy Bypass -Command \". \\\"${env:USERPROFILE}\\.claude\\claude-status.ps1\\\"\""
   },
   "alwaysThinkingEnabled": true
 }
