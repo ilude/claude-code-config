@@ -5,7 +5,7 @@ description: Guidelines for optimizing Claude rulesets and instruction files (CL
 
 # Ruleset Optimization Guidelines
 
-This skill provides comprehensive guidelines for optimizing Claude rulesets and instruction files to minimize context usage while maximizing effectiveness.
+This skill provides comprehensive guidelines for optimizing Claude rulesets to minimize context usage while maximizing effectiveness.
 
 ## Context Efficiency Philosophy
 
@@ -31,28 +31,28 @@ Context efficiency is THE most important optimization principle. Every token cou
    - Details = loaded on-demand via skills (~80% of content)
    - Result: Faster responses, better reasoning
 
-## When Optimizing Rulesets
+## Prioritization Framework
 
-### Prioritization Framework
+### Token Savings Calculation
 
-1. **Calculate token savings from skill extraction**
+1. **Calculate extraction value**
    - Count tokens in section to be moved
-   - Estimate how often section is needed (always/sometimes/rarely)
+   - Estimate usage frequency (always/sometimes/rarely)
    - Calculate savings: tokens × (1 - usage_frequency)
 
-2. **Prioritize moves that save >100 tokens**
+2. **Priority thresholds**
    - High-impact: 500+ tokens, used <50% of time
    - Medium-impact: 200-500 tokens, used <30% of time
    - Low-impact: <200 tokens or used >70% of time
 
-3. **Report context efficiency gains**
+3. **Report efficiency gains**
    - Before: X tokens baseline
    - After: Y tokens baseline, Z with skills (when needed)
    - Savings: (X - Y) tokens baseline (N% reduction)
 
-### Content Classification
+## Content Classification
 
-**Move to Skills (procedural "how-to"):**
+### Move to Skills (Procedural "How-To")
 - Step-by-step procedures
 - Domain-specific workflows
 - Tool usage patterns
@@ -60,7 +60,7 @@ Context efficiency is THE most important optimization principle. Every token cou
 - Language/framework-specific rules
 - Optional best practices
 
-**Keep in CLAUDE.md (policy "what/why"):**
+### Keep in CLAUDE.md (Policy "What/Why")
 - Core values and principles
 - Always-applicable preferences
 - Security requirements
@@ -68,124 +68,70 @@ Context efficiency is THE most important optimization principle. Every token cou
 - Communication style
 - Project structure overview
 
-### Deduplication Strategy
+## Deduplication Strategy
 
-**Personal vs Project Rulesets:**
-- Personal ruleset (~/.claude/CLAUDE.md): Universal defaults
-- Project ruleset (.claude/CLAUDE.md): Project-specific overrides
+### Personal vs Project Rulesets
+- **Personal** (~/.claude/CLAUDE.md): Universal defaults
+- **Project** (.claude/CLAUDE.md): Project-specific overrides
 - Never duplicate content between them
 - Project ruleset always takes precedence
 
-**Across Skills:**
+### Across Skills
 - Each skill should have clear, non-overlapping scope
 - Reference other skills rather than duplicating content
 - Use skill dependencies when logical flow requires it
 
-## Creating New Skills
+## Creating Effective Skills
 
-### Skill Structure
-
+### Structure Template
 ```markdown
 ---
 name: skill-name
-description: Clear description of when to activate, what it contains, and manual/auto activation triggers.
+description: Clear description of when to activate and what it contains.
 ---
 
 # Skill Title
 
 Brief introduction and purpose.
 
-## Section 1: Core Content
-...
-
-## Section 2: Additional Details
-...
+## Core Content
+[Domain-specific guidance]
 ```
 
 ### Activation Patterns
+**Auto-activation triggers:**
+- File patterns: .py, package.json, Dockerfile
+- Git operations: commit, push, version control
+- Project structure: directories, files present
 
-**Auto-activation (file/project patterns):**
-- Git operations: git commit, push, version control
-- Python projects: .py files, pyproject.toml, requirements.txt
-- Web projects: package.json, React, Next.js
-- Container projects: Dockerfile, docker-compose.yml
+**Manual invocation:**
+- Slash commands: /optimize-prompt, /commit
+- Explicit requests: "optimize this ruleset"
 
-**Manual invocation (commands):**
-- Slash commands: `/optimize-prompt`, `/commit`, `/analyze-permissions`
-- Explicit requests: "optimize this ruleset", "help with prompting"
+## Extraction Decision Tree
 
-### Naming Conventions
-
-- Use kebab-case for skill directories
-- SKILL.md for the main file (consistent with existing skills)
-- Include version/date in description if content is time-sensitive
-
-## Optimization Workflow
-
-### Step 1: Analyze Current State
-
-1. Read the full CLAUDE.md or project ruleset
-2. Identify distinct sections/topics
-3. Count approximate tokens per section
-4. Estimate usage frequency for each section
-
-### Step 2: Identify Candidates
-
-Look for sections that are:
-- Domain-specific (git, python, docker, etc.)
-- Procedural (step-by-step instructions)
-- Large (>200 tokens)
-- Conditionally needed (<70% of sessions)
-- Duplicated between personal/project rulesets
-
-### Step 3: Extract to Skills
-
-1. Create skill directory: `~/.claude/skills/skill-name/`
-2. Write SKILL.md with proper frontmatter
-3. Include activation description in frontmatter
-4. Move content from ruleset to skill
-5. Test activation triggers
-
-### Step 4: Update Ruleset References
-
-Replace extracted section with:
-```markdown
-## Section Title
-
-**Guidelines have been moved to a skill for context efficiency.**
-
-The `skill-name` skill contains:
-- Brief bullet list of what's included
-- Quick highlights
-
-**Activation:** [auto/manual] - when [trigger description]
-
-**Quick reference:**
-- Key point 1
-- Key point 2
-
-See `~/.claude/skills/skill-name/SKILL.md` for complete guidelines.
+```
+Is content >200 tokens?
+├─ No → Keep in CLAUDE.md
+└─ Yes → Is it procedural?
+    ├─ No → Keep in CLAUDE.md (policy)
+    └─ Yes → Is it used <70% of sessions?
+        ├─ No → Keep in CLAUDE.md (always needed)
+        └─ Yes → Extract to skill (saves tokens)
 ```
 
-### Step 5: Verify and Document
+## Anti-Patterns to Avoid
 
-1. Test that skill activates correctly
-2. Ensure no broken references
-3. Calculate token savings
-4. Update CHANGELOG.md with optimization details
+❌ **Over-extraction:** Don't create skills for tiny sections (<100 tokens)
+❌ **Under-referencing:** Always add reference when removing content
+❌ **Duplication:** Never duplicate between personal/project or across skills
+❌ **Poor organization:** Don't mix multiple domains in one skill
 
-## Example Impact
+## Optimization Impact Examples
 
-**Before optimization:**
-- CLAUDE.md: 6,000 tokens baseline
-- All content loaded every session
-- Slower responses, more context pollution
-
-**After optimization:**
-- CLAUDE.md: 4,000 tokens baseline (33% reduction)
-- Skills: 1,500 tokens additional when activated
-- Total with all skills: 5,500 tokens (still 8% savings)
-- Most sessions: 4,000-4,500 tokens (25-33% savings)
+**Before:** 6,000 tokens baseline (all loaded)
+**After:** 4,000 tokens baseline + 1,500 tokens in skills (selective)
+**Result:** 33% baseline reduction, 25-33% typical session savings
 
 **Compound benefits:**
 - Optimization helps ALL projects using shared skills
@@ -193,65 +139,19 @@ See `~/.claude/skills/skill-name/SKILL.md` for complete guidelines.
 - Faster context loading and better reasoning
 - More room for project-specific context
 
-## Common Optimization Patterns
-
-### Pattern 1: Language/Framework Workflow
-**Extract:** Python workflow, JavaScript/Node.js workflow, Docker workflow
-**Keep:** General code quality preferences, file operation policies
-
-### Pattern 2: Tool-Specific Guidelines
-**Extract:** Git workflow, pytest usage, npm/yarn preferences
-**Keep:** Security requirements, commit policies
-
-### Pattern 3: Project Type Patterns
-**Extract:** Multi-agent AI projects, web projects, container projects
-**Keep:** Project structure overview, session management
-
-### Pattern 4: Advanced Techniques
-**Extract:** Prompt engineering, optimization strategies
-**Keep:** Basic communication style, core preferences
-
-## Anti-Patterns to Avoid
-
-❌ **Over-extraction:**
-- Don't create skills for tiny sections (<100 tokens)
-- Don't split highly cohesive content
-- Don't create skills for always-needed content
-
-❌ **Under-referencing:**
-- Don't remove section without adding reference
-- Don't lose context about what skill contains
-- Don't forget activation triggers in reference
-
-❌ **Duplication:**
-- Don't duplicate between personal/project rulesets
-- Don't duplicate across multiple skills
-- Don't duplicate between ruleset and skill reference
-
-❌ **Poor organization:**
-- Don't mix multiple domains in one skill
-- Don't create overly broad skills
-- Don't create overlapping activation triggers
-
-## Maintenance
+## Maintenance Guidelines
 
 ### Regular Review
-- Quarterly review of token usage
+- Quarterly token usage review
 - Check for new extraction opportunities
-- Verify skill activation patterns work correctly
+- Verify skill activation patterns
 - Remove stale or unused skills
 
 ### Skill Evolution
-- Update skill content as practices evolve
-- Merge skills if scopes overlap
-- Split skills if they grow too large (>1000 tokens)
+- Update content as practices evolve
+- Merge overlapping skills
+- Split skills >1000 tokens
 - Archive deprecated skills with notes
-
-### Documentation
-- Keep CHANGELOG.md updated with optimizations
-- Document token savings from each change
-- Note lessons learned for future optimizations
-- Share patterns across projects
 
 ---
 

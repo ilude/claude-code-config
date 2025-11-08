@@ -5,134 +5,94 @@ description: Git workflow and commit guidelines. MUST be activated before ANY gi
 
 # Git Workflow Guidelines
 
-This skill provides comprehensive git workflow guidelines that apply to all git operations.
+Comprehensive git workflow principles for all git operations.
 
-## CRITICAL: Push Behavior (READ FIRST)
+## Critical Rules
 
-**NEVER push to remote unless user explicitly includes "push" keyword in their request.**
+### Push Behavior
+**NEVER push without explicit "push" keyword in request.**
 
-**Examples:**
-- "commit my changes" → Commit only, NO push ❌
-- "/commit" → Commit only, NO push ❌
-- "commit these changes" → Commit only, NO push ❌
-- "/commit push" → Commit AND push ✅
-- "commit and push" → Commit AND push ✅
-- "push after committing" → Commit AND push ✅
+- "commit my changes" → NO push
+- "commit and push" → YES push
 
-**Why this matters:** Pushing is irreversible and may affect team members. Always require explicit permission.
+Pushing is irreversible and affects team members. After committing without push, inform user: "Changes committed locally. Run 'git push' to push to remote."
 
-**After committing:** Inform user that changes are committed locally. If they want to push, they can say "push" or "git push".
+### When to Commit
+Only commit when explicitly requested. Never commit proactively.
 
-## When to Commit
+## Security First
 
-- **Only commit when explicitly requested**
-- Ask for clarification if commit intent is unclear
-- Multiple related changes can be a single commit
-- Unrelated changes should be separate commits
+### Before ANY Commit
 
-## Before Committing (Security First)
+**Always scan for secrets. If found, STOP and refuse to commit.**
 
-### 1. Scan for Secrets and Sensitive Data
+Critical patterns include:
+- API keys (API_KEY=, sk-ant-, sk-proj-)
+- Tokens (TOKEN=, Bearer)
+- Passwords (PASSWORD=, pwd=)
+- Private keys (-----BEGIN)
+- Hardcoded credentials in code
 
-**ALWAYS scan before creating ANY commits:**
-
-**Files to check:**
-- .env, .env.local, .env.production
-- credentials.json, secrets.yaml, config.json
-- .pem, .key, .p12, .pfx (private keys, certificates)
-- Any file with "secret", "credential", "password" in name
-
-**Patterns to scan for:**
-- API keys: API_KEY=, ANTHROPIC_API_KEY=, OPENAI_API_KEY=, sk-ant-, sk-proj-, key-
-- Tokens: TOKEN=, ACCESS_TOKEN=, Bearer, token:
-- Passwords: PASSWORD=, pwd=, passwd=
-- Private keys: -----BEGIN PRIVATE KEY-----, -----BEGIN RSA PRIVATE KEY-----
-- Hardcoded credentials: password = "...", api_key = "sk-..."
-
-### 2. If Security Issues Found
-
-**STOP IMMEDIATELY** - do NOT create any commits:
-
-1. Show which files/lines contain sensitive data
-2. Provide specific line numbers and content preview
-3. Suggest .gitignore entries to exclude files
-4. Suggest using environment variables instead
-5. Warn user even if they insist on committing
-6. **Never commit secrets** - refuse if user insists
-
-### 3. Analyze Changes
-
-Run in parallel to understand the context:
-- git status - See all uncommitted changes
-- git diff - Understand what changed
-- git log - Learn repository's commit message style
+If detected:
+1. Show specific files/lines
+2. Suggest .gitignore additions
+3. Recommend environment variables
+4. Refuse even if user insists
 
 ## Commit Organization
 
-Group changes logically by type/purpose:
+### Types
+| Type | Purpose | Examples |
+|------|---------|----------|
+| docs | Documentation | README, *.md, comments |
+| test | Tests | test_*.py, *.spec.*, tests/ |
+| feat | New features | New functionality |
+| fix | Bug fixes | Corrections |
+| refactor | Code improvements | No behavior change |
+| chore | Configuration | .gitignore, config files |
+| build | Build/CI | Dockerfile, .github/ |
+| deps | Dependencies | lock files, requirements |
 
-- **docs**: Documentation (*.md, README, comments)
-- **test**: Tests (test_*.py, *.spec.*, tests/)
-- **feat**: New features (new capabilities)
-- **fix**: Bug fixes (corrections to existing functionality)
-- **refactor**: Code improvements without behavior changes
-- **chore**: Configuration (.gitignore, pyproject.toml, config files)
-- **build**: Build/CI (Dockerfile, .github/, CI configs)
-- **deps**: Dependencies only (uv.lock, requirements.txt)
-
-**Important:**
-- **Single commit** if all changes are closely related
-- **Multiple commits** only when changes serve different purposes
+### Grouping Strategy
+- Single commit: All changes closely related
+- Multiple commits: Different types or purposes
+- Follow project's existing commit style (check git log)
 
 ## Commit Message Format
 
-Always use HEREDOC format for proper multi-line formatting.
+Use HEREDOC for multi-line messages:
+```bash
+git commit -m "$(cat <<'EOF'
+type: concise summary
 
-### Guidelines
+Optional details focusing on why, not what
 
-- Follow project's commit message style (from git log)
-- Focus on "why" rather than "what"
-- Keep summary concise (1-2 sentences)
-- Always include Claude Code attribution
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-## Verification
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
 
-After creating commits:
+Focus on "why" rather than "what". Keep summary to 1-2 sentences.
 
-- Run git status to verify NO uncommitted changes remain
-- Show summary of commits created
-- If files remain uncommitted (and no security issues), create additional commits
+## Workflow Process
 
-## Pushing to Remote (Explicit Permission Required)
-
-**Only push when explicitly requested with "push" keyword:**
-
-When pushing:
-- Push ONLY after ALL commits are successfully created
-- Single push for all commits: git push
-- Verify push succeeds
-- Report push status to user
-
-**After commit (without push):**
-- Inform user: "Changes committed locally. Run 'git push' to push to remote."
-- Do NOT suggest pushing - let user decide
+1. **Security scan** - Check for secrets first
+2. **Analyze** - Run git status, diff, log in parallel
+3. **Group** - Organize by commit type
+4. **Commit** - Use HEREDOC format
+5. **Verify** - Ensure clean status
+6. **Push** - Only if explicitly requested
 
 ## Safety Rules
 
-- **Never skip hooks** (no --no-verify) unless explicitly requested
-- **Never run destructive commands** without confirmation
-- **No force pushes** to main/master branches
-- **Check authorship** before amending commits (only amend your own)
-- **Never amend commits** by other developers
-- **If pre-commit hooks modify files**: Only amend if safe (check authorship first)
+- Never skip hooks (--no-verify) without request
+- No force push to main/master
+- Only amend your own commits
+- Check authorship before amending
+- If pre-commit hooks modify files, only amend if safe
 
-## Integration with /commit Command
+## Philosophy
 
-This skill provides the principles and guidelines. The /commit slash command provides the detailed procedural implementation. Both should follow the same workflow standards documented here.
-
----
-
-**Remember:** 
-1. Security first - scan for secrets before every commit
-2. Never push without explicit "push" keyword
-3. Commit only when explicitly requested
+This skill defines the principles. The `/commit` command implements the procedural execution. Security always comes first, commits require explicit request, and pushes require the "push" keyword.

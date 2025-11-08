@@ -1,34 +1,49 @@
+---
+name: prompt-engineering
+description: Advanced prompting techniques for transforming basic prompts into structured, high-quality prompts. Provides 7 techniques with templates. Manually invoke via /optimize-prompt or /prompt-help commands.
+---
+
 # Prompt Engineering Skill
 
-**Purpose**: Advanced prompting techniques for transforming basic prompts into high-quality, structured prompts
-**Type**: Reference skill (invoked by `/optimize-prompt` and `/prompt-help` commands)
-**Owner**: mglenn
-**Created**: 2025-11-05
-**Source**: "The Mental Models of Master Prompters: 10 Techniques for Advanced Prompting" (YouTube)
+Advanced prompting techniques based on "The Mental Models of Master Prompters" - scaffolding reasoning processes, not magic words.
 
----
+## Technique Selection Decision Tree
 
-## Overview
+```
+Prompt Pattern → Recommended Technique
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Analysis/evaluation ("analyze", "assess") → deep-analyze
+Decision/choice ("choose", "vs", "which") → multi-perspective
+Vague/unclear (<10 words, no specifics) → meta-prompting
+Explanation ("explain", "how", "what") → deliberate-detail OR reasoning-scaffold
+Improvement ("optimize", "better") → recursive-review
+Design/create ("design", "build") → meta-prompting,reasoning-scaffold
+Risk/security (security terms) → deep-analyze
+Complex/multi-part (multiple "and") → reasoning-scaffold + context
+Default/unsure → meta-prompting
+```
 
-This skill provides templates and patterns for enhancing prompts using advanced techniques. It is designed to work with the `/optimize-prompt` command, which transforms basic prompts by incorporating these techniques.
+## Token Cost Reference
 
-**Key principle**: These techniques structure how LLMs reason, verify, and evolve - they're not about "magic words" but about scaffolding the reasoning process.
+| Technique | Multiplier | Worth It When |
+|-----------|------------|---------------|
+| meta-prompting | 1.5-2x | Need optimal prompt design |
+| recursive-review | 1.5-2x | Building reusable templates |
+| deep-analyze | 2-3x | High-stakes decisions |
+| multi-perspective | 3-4x | Complex trade-offs |
+| deliberate-detail | 2-3x | Learning/documentation |
+| reasoning-scaffold | 1.5-2x | Need reproducible thinking |
+| temperature-simulation | 2x | Confidence calibration critical |
 
----
-
-## Available Techniques
+## Technique Templates
 
 ### 1. meta-prompting
-**Category**: Meta-Prompting
-**Purpose**: Reverse prompting - ask the model to design the optimal prompt, then execute it
-**Token cost**: ~1.5-2x
-**Best for**: Unfamiliar domains, maximum quality output, learning prompt patterns
+**Best for**: Unfamiliar domains, maximum quality, vague prompts
 
-**Template**:
 ```
 You're an expert prompt designer.
 
-Task: {ORIGINAL_PROMPT}
+Task: {BASE_PROMPT}
 
 Design the single most effective prompt to achieve this. Consider:
 - What context is essential vs optional?
@@ -41,22 +56,11 @@ Design the single most effective prompt to achieve this. Consider:
 Then execute that designed prompt.
 ```
 
-**When to suggest**:
-- Vague or underspecified prompts
-- User asking "how do I prompt for X?"
-- Need maximum quality with unknown domain
-
----
-
 ### 2. recursive-review
-**Category**: Meta-Prompting
-**Purpose**: Iteratively refine prompt through 3 focused optimization passes
-**Token cost**: ~1.5-2x
-**Best for**: Refining complex prompts, debugging poor outputs, building reusable templates
+**Best for**: Building reusable templates, debugging prompts
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
 Then optimize this through 3 versions:
 
@@ -81,22 +85,11 @@ Version 3: Enhance reasoning depth
 After all versions, execute the final optimized version.
 ```
 
-**When to suggest**:
-- Prompt produces inconsistent results
-- Need to build a reusable template
-- Prompt has known issues but unclear how to fix
-
----
-
 ### 3. deep-analyze
-**Category**: Self-Correction
-**Purpose**: Chain of verification + adversarial review for rigorous analysis
-**Token cost**: ~2-3x
-**Best for**: High-stakes decisions, fact-heavy topics, need confidence calibration
+**Best for**: High-stakes decisions, security analysis, confidence calibration
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
 Phase 1: Initial Analysis
 Provide thorough analysis of the topic.
@@ -124,14 +117,14 @@ Now verify your analysis systematically:
    - What are the key uncertainties?
 
 Phase 3: Adversarial Review
-Attack your revised analysis aggressively:
+Attack your revised analysis:
 
-1. **Identify 5 Failure Modes**: Specific ways your analysis could be wrong or mislead
+1. **Identify 5 Failure Modes**: Specific ways your analysis could be wrong
    - For each: Likelihood (Low/Med/High) and Impact (1-10 scale)
 
 2. **Prioritize Top 3 Vulnerabilities**: Which failures matter most?
 
-3. **Mitigations**: How could you strengthen the analysis or hedge against failures?
+3. **Mitigations**: How could you strengthen the analysis?
 
 Phase 4: Final Synthesis
 Provide:
@@ -140,43 +133,31 @@ Provide:
 - Recommended actions (given uncertainty)
 - Follow-up questions (to improve confidence)
 
-CRITICAL: Be genuinely self-critical. If verification doesn't find problems, the analysis wasn't rigorous enough.
+Be self-critical. If verification doesn't find problems, the analysis wasn't rigorous enough.
 ```
-
-**When to suggest**:
-- Analysis or evaluation prompts
-- Security, risk, or compliance topics
-- High-stakes technical decisions
-- User asks for "thorough" or "rigorous" analysis
-
----
 
 ### 4. multi-perspective
-**Category**: Perspective Engineering
-**Purpose**: Multi-persona debate with conflicting priorities to explore solution space
-**Token cost**: ~3-4x
-**Best for**: Complex trade-off decisions, stakeholder alignment, exploring options
+**Best for**: Complex trade-offs, stakeholder alignment, exploring options
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
-Approach this through a multi-persona debate with conflicting priorities.
+Approach through multi-persona debate with conflicting priorities.
 
 Setup: Define 3 Expert Personas
 
-Identify 3 experts with genuinely conflicting priorities for this problem:
+Identify 3 experts with genuinely conflicting priorities:
 
 **Persona 1**: [Name/Role]
 - Primary Priority: [What they optimize for]
 - Background: [Relevant expertise]
 
 **Persona 2**: [Name/Role]
-- Primary Priority: [What they optimize for - MUST conflict with Persona 1]
+- Primary Priority: [MUST conflict with Persona 1]
 - Background: [Relevant expertise]
 
 **Persona 3**: [Name/Role]
-- Primary Priority: [What they optimize for - MUST conflict with 1 and 2]
+- Primary Priority: [MUST conflict with 1 and 2]
 - Background: [Relevant expertise]
 
 Round 1: Opening Arguments
@@ -192,7 +173,7 @@ Each persona critiques the other two approaches:
 - **Persona 3 Critiques**: Problems with Persona 1 and 2's approaches
 
 Round 3: Refinement & Compromise
-Each persona responds to critiques and identifies potential compromise:
+Each responds to critiques and identifies compromise:
 - **Persona 1**: How critiques change their view, one area for compromise
 - **Persona 2**: How critiques change their view, one area for compromise
 - **Persona 3**: How critiques change their view, one area for compromise
@@ -200,31 +181,19 @@ Each persona responds to critiques and identifies potential compromise:
 Synthesis:
 - Points of Agreement: [What all personas agree on]
 - Irreconcilable Differences: [Where compromise isn't possible]
-- Recommended Balanced Solution: [Integrated approach addressing key concerns]
+- Recommended Balanced Solution: [Integrated approach]
 - Sensitivity Analysis: If X priority dominates, choose Y approach
 
-CRITICAL: Personas must have genuine tension. If they agree too quickly, they're not realistic.
+Personas must have genuine tension. If they agree too quickly, they're not realistic.
 ```
-
-**When to suggest**:
-- Decision-making prompts (choose between X and Y)
-- "Should we..." questions
-- Architecture or design choices
-- Process or policy decisions
-
----
 
 ### 5. deliberate-detail
-**Category**: Reasoning Scaffolds
-**Purpose**: Fight premature compression - demand exhaustive detail
-**Token cost**: ~2-3x
-**Best for**: Learning complex topics, comprehensive documentation, exploring edge cases
+**Best for**: Learning complex topics, comprehensive documentation
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
-CRITICAL INSTRUCTIONS - Do NOT summarize. Do NOT be concise.
+Do NOT summarize. Do NOT be concise.
 
 For every point you make, provide:
 - **Implementation details**: How exactly it works (step-by-step)
@@ -235,26 +204,14 @@ For every point you make, provide:
 - **Alternatives**: What other approaches exist and why they weren't chosen
 
 Prioritize completeness over brevity. Expand every concept fully.
-I need exhaustive depth here, not an executive summary.
+I need exhaustive depth, not an executive summary.
 ```
-
-**When to suggest**:
-- User explicitly asks for "detailed" or "comprehensive"
-- Learning/educational prompts
-- Documentation generation
-- Understanding complex systems
-
----
 
 ### 6. reasoning-scaffold
-**Category**: Reasoning Scaffolds
-**Purpose**: Provide explicit structured template for step-by-step reasoning
-**Token cost**: ~1.5-2x
-**Best for**: Complex decisions, reproducible reasoning, systematic analysis
+**Best for**: Systematic decisions, reproducible analysis
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
 Follow this structured reasoning approach:
 
@@ -263,7 +220,7 @@ What is the fundamental question being asked?
 [Answer here]
 
 Step 2: Key Components
-What are the essential variables, entities, or components involved?
+What are the essential variables, entities, or components?
 [List and define each]
 
 Step 3: Relationships
@@ -275,7 +232,7 @@ What are 3-5 possible approaches or solutions?
 [For each: Description, Pros, Cons]
 
 Step 5: Decision Criteria
-What criteria should guide the selection?
+What criteria should guide selection?
 [Define criteria with relative weights/importance]
 
 Step 6: Optimal Approach
@@ -283,7 +240,7 @@ Which approach is optimal and why?
 [Justify selection against criteria from Step 5]
 
 Step 7: Risk Analysis
-What could go wrong with this approach?
+What could go wrong?
 [Identify risks and mitigation strategies]
 
 Step 8: Final Recommendation
@@ -291,28 +248,16 @@ Clear recommendation with confidence level (0-100%)
 [State recommendation, confidence %, justification]
 ```
 
-**When to suggest**:
-- Complex decision-making prompts
-- Comparison prompts (X vs Y vs Z)
-- Need systematic, reproducible thinking
-- Architectural or design decisions
-
----
-
 ### 7. temperature-simulation
-**Category**: Perspective Engineering
-**Purpose**: Simulate different confidence levels (uncertain vs confident) then synthesize
-**Token cost**: ~2x
-**Best for**: Calibrating confidence appropriately, catching obvious mistakes, avoiding overconfidence
+**Best for**: Confidence calibration, catching mistakes
 
-**Template**:
 ```
-{ORIGINAL_PROMPT}
+{BASE_PROMPT}
 
-Provide two different responses at different confidence levels, then synthesize:
+Provide two responses at different confidence levels, then synthesize:
 
 Response 1 - Junior Analyst Perspective (Uncertain, Over-Explains)
-Approach this topic as someone less experienced would:
+Approach as someone less experienced would:
 - Use hedged language and caveats
 - Explain basic concepts step-by-step
 - Be uncertain about conclusions
@@ -320,7 +265,7 @@ Approach this topic as someone less experienced would:
 [Junior's response]
 
 Response 2 - Senior Expert Perspective (Confident, Direct)
-Approach this as a domain expert would:
+Approach as a domain expert would:
 - Bottom-line up front
 - Assume domain knowledge
 - State conclusions directly
@@ -328,171 +273,57 @@ Approach this as a domain expert would:
 [Expert's response]
 
 Synthesis - Balanced Integration
-Now synthesize both perspectives:
+Synthesize both perspectives:
 - What does the junior catch that the expert glosses over?
 - What does the expert see that the junior misses?
 - What's the appropriately-calibrated answer?
 [Integrated response with appropriate confidence]
 ```
 
-**When to suggest**:
-- User seems overconfident or underconfident
-- Need to check for obvious mistakes
-- Calibrating certainty is important
-- Novel or unfamiliar domain
-
----
-
-## Technique Selection Guide
-
-When user provides a prompt without specifying techniques, analyze the prompt and select appropriate technique(s) based on these indicators:
-
-### Analysis/Evaluation Prompts
-**Indicators**: "analyze", "evaluate", "assess", "review", "examine"
-**Recommend**: `deep-analyze` (always) or `deep-analyze,multi-perspective` (if decision involved)
-
-### Decision/Choice Prompts
-**Indicators**: "choose", "select", "decide", "which", "should we", "vs", "or"
-**Recommend**: `multi-perspective` (always) or `multi-perspective,reasoning-scaffold` (if complex)
-
-### Vague/Underspecified Prompts
-**Indicators**: Very short (< 10 words), no specifics, unclear goal
-**Recommend**: `meta-prompting` (let model design better prompt)
-
-### Explanation/Understanding Prompts
-**Indicators**: "explain", "how does", "what is", "describe", "learn about"
-**Recommend**: `deliberate-detail` (if complex topic) or `reasoning-scaffold` (if systematic)
-
-### Improvement/Optimization Prompts
-**Indicators**: "improve", "optimize", "better", "enhance"
-**Recommend**: `recursive-review`
-
-### Creative/Design Prompts
-**Indicators**: "design", "create", "build", "generate"
-**Recommend**: `meta-prompting,reasoning-scaffold`
-
-### Risk/Security Prompts
-**Indicators**: "security", "risk", "vulnerability", "attack", "safe"
-**Recommend**: `deep-analyze` (always include adversarial review)
-
-### Complex Multi-Faceted Prompts
-**Indicators**: Multiple questions, "and", compound requirements
-**Recommend**: `reasoning-scaffold` (structure) + domain-appropriate technique
-
-### Default Fallback
-**If no clear indicators**: `meta-prompting` (safest - lets model figure it out)
-
----
-
 ## Technique Combinations
 
-Some techniques work well together:
+**Powerful combinations**:
+- `meta-prompting,recursive-review` - Design optimal prompt, then refine
+- `deep-analyze,multi-perspective` - Rigorous analysis from multiple angles
+- `reasoning-scaffold,deliberate-detail` - Structured exploration with full detail
+- `multi-perspective,reasoning-scaffold` - Multiple viewpoints with systematic comparison
 
-### Excellent Combinations ✅
+**Apply in order**: meta-prompting → recursive-review → deep-analyze → multi-perspective
 
-| Combination | Use Case | Effect |
-|-------------|----------|--------|
-| `meta-prompting,recursive-review` | Building optimal prompt | Design from scratch, then refine iteratively |
-| `deep-analyze,multi-perspective` | High-stakes decision | Rigorous analysis from multiple angles |
-| `reasoning-scaffold,deliberate-detail` | Learning complex topic | Structured exploration with exhaustive detail |
-| `multi-perspective,reasoning-scaffold` | Complex choice | Multiple viewpoints with systematic comparison |
+## Anti-Patterns
 
-### Redundant Combinations ⚠️
+| Anti-Pattern | Problem | Fix |
+|--------------|---------|-----|
+| Over-engineering | deep-analyze for "syntax of X" | Match complexity to importance |
+| Template rigidity | Following steps blindly | Adapt/skip irrelevant steps |
+| Verification theater | Finding nothing wrong | Genuine critique required |
+| Persona stereotyping | Generic "lawyer vs cowboy" | Specific realistic priorities |
+| Missing synthesis | Just listing perspectives | Must integrate views |
 
-| Combination | Issue | Better Alternative |
-|-------------|-------|-------------------|
-| `recursive-review,deep-analyze` | Both do verification | Choose one based on use case |
-| `meta-prompting,reasoning-scaffold` | Both provide structure | `meta-prompting` alone (will add structure) |
-| `deliberate-detail,temperature-simulation` | Conflicting verbosity | Choose one |
+## Effectiveness Indicators
 
----
+✅ **Strong prompt transformation:**
+- Analysis finds genuine problems/gaps
+- Personas have real tension/conflict
+- Confidence varies appropriately
+- Verification changes conclusions
+- Multiple approaches genuinely differ
 
-## Anti-Patterns to Avoid
+❌ **Weak transformation:**
+- Verification finds no issues
+- All personas basically agree
+- Junior/senior perspectives identical
+- No real constraints added
+- Going through motions without depth
 
-1. **Over-Engineering Simple Questions**
-   - Don't use `deep-analyze` for "What's the syntax for X?"
-   - Match technique complexity to problem importance
+## Integration Notes
 
-2. **Template Rigidity**
-   - Adapt templates to context
-   - Skip irrelevant steps explicitly if needed
+**Command usage**:
+- `/optimize-prompt [techniques] <prompt>` - Apply techniques
+- `/prompt-help [technique]` - View documentation
 
-3. **Verification Theater**
-   - Verification must be genuine, not performative
-   - If verification finds nothing, that's suspicious
+**Auto-selection**: Command uses decision tree above when no techniques specified.
 
-4. **Persona Stereotyping**
-   - Give personas specific, realistic priorities
-   - Avoid caricatures (e.g., "cautious lawyer" vs "cowboy developer")
+**Token awareness**: Each technique multiplies tokens. Balance value vs cost.
 
-5. **Ignoring Synthesis**
-   - Multi-perspective techniques require synthesis
-   - Don't just present multiple views - integrate them
-
----
-
-## Measuring Effectiveness
-
-**Indicators these techniques are working:**
-- ✅ Output includes explicit uncertainty quantification
-- ✅ Multiple perspectives are genuinely in tension
-- ✅ Verification finds actual problems (not just confirms)
-- ✅ Reasoning chains are clear and reproducible
-- ✅ Edge cases and failure modes are identified
-
-**Indicators of poor application:**
-- ❌ Verification confirms everything (suspicious)
-- ❌ Personas agree too quickly (not realistic)
-- ❌ Reasoning is still compressed/surface-level
-- ❌ No new insights vs simpler prompt
-- ❌ Excessive tokens for marginal quality gain
-
----
-
-## Token Cost Guidelines
-
-All techniques increase token usage. Use appropriately:
-
-| Technique | Cost Multiplier | When to Accept Cost |
-|-----------|----------------|---------------------|
-| meta-prompting | 1.5-2x | Unfamiliar domain, need quality |
-| recursive-review | 1.5-2x | Building reusable template |
-| deep-analyze | 2-3x | High-stakes decision |
-| multi-perspective | 3-4x | Complex trade-offs |
-| deliberate-detail | 2-3x | Learning/documentation |
-| reasoning-scaffold | 1.5-2x | Need reproducibility |
-| temperature-simulation | 2x | Confidence calibration critical |
-
-**Rule of thumb**: Reserve multi-technique combinations for highest-value problems.
-
----
-
-## Quick Reference
-
-**Need verification?** → `deep-analyze`
-**Making a choice?** → `multi-perspective`
-**Prompt unclear?** → `meta-prompting`
-**Want structure?** → `reasoning-scaffold`
-**Need detail?** → `deliberate-detail`
-**Calibrate confidence?** → `temperature-simulation`
-**Refining prompt?** → `recursive-review`
-
----
-
-## Integration with Commands
-
-This skill is designed to work with:
-
-- `/optimize-prompt [techniques] <prompt>` - Transform basic prompt using techniques
-- `/prompt-help [technique]` - Documentation and examples
-
----
-
-## Updates
-
-**2025-11-05**: Initial creation
-- Core techniques from "Mental Models of Master Prompters"
-- Templates for each technique
-- Intelligent technique selection guide
-- Combination recommendations
-- Anti-patterns and measurement guidance
+**Philosophy**: These techniques scaffold reasoning processes. They work by structuring how Claude thinks about problems, not through special keywords.

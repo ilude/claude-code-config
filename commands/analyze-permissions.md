@@ -1,79 +1,71 @@
 ---
 description: Analyze permission patterns and optionally add them to settings.json
+model: haiku
 ---
 
 # Permission Analyzer Command
 
-When this command is run, analyze Claude Code debug logs to find frequently-requested permissions and offer to add them to settings.json.
+Analyze debug logs for frequently-requested permissions. Filter out existing patterns. Present new suggestions grouped by safety level.
 
-## Step 1: Run the analyzer
+## Execution Workflow
 
-First, run the permission analyzer to extract patterns from debug logs:
+### 1. Run Analyzer
 
+Check script exists:
 ```bash
+test -f ~/.claude/scripts/permission-analyzer.py || exit 1
+```
+
+Create temp directory and run:
+```bash
+mkdir -p ./tmp
 python ~/.claude/scripts/permission-analyzer.py --json ./tmp/analyze-permissions-temp.json --min-count 3
 ```
 
-## Step 2: Parse and present recommendations
+### 2. Read Current Permissions
 
-Read the JSON output and identify new permission patterns to suggest. Group them by safety level:
-- **SAFE**: Read-only operations with no side effects
-- **REVIEW**: Operations that may have side effects
+Load existing patterns from settings.json:
+```bash
+settings_path=~/.claude/settings.json
+```
 
-## Step 3: Interactive approval
+Extract current allow list (will use this to filter duplicates).
 
-Present the recommendations to the user with clear categories:
+### 3. Parse Analyzer Results
 
-1. Show SAFE patterns (if any) and ask if they should be added
-2. Show REVIEW patterns (if any) separately with warnings
-3. Allow user to approve all, select individually, or skip
+Read JSON output:
+```bash
+temp_file=./tmp/analyze-permissions-temp.json
+```
 
-## Step 4: Update settings.json
+Get suggestions array from JSON.
 
-If the user approves additions:
+### 4. Filter & Categorize
 
-1. Read current settings.json
-2. Add approved patterns to permissions.allow array
-3. Remove duplicates
-4. Write updated settings.json with proper formatting
-5. Confirm changes were saved
+For each suggestion:
+1. Check if pattern already in allow list → skip if yes
+2. Check safety level:
+   - "safe" → add to safe_patterns list
+   - "risky" → add to review_patterns list
+   - "dangerous" → skip (never suggest)
 
-## Implementation Instructions
+Result: Two lists of NEW patterns only (duplicates removed).
 
-1. Check if the analyzer script exists at `~/.claude/scripts/permission-analyzer.py`
-2. Create temp directory `./tmp` if it doesn't exist
-3. Run the analyzer with JSON output
-4. Parse the JSON to extract suggestions
-5. Filter out patterns that are marked as "dangerous" safety level
-6. Present recommendations grouped by safety
-7. If user approves, update settings.json atomically
-8. Clean up temp files
-9. Report results to user
+### 5. Present Results
 
-## Error Handling
-
-- If analyzer script not found: Inform user to run the setup first
-- If no debug logs: Inform user that Claude Code needs to be used to generate logs
-- If no new suggestions: Inform user all frequent patterns are already approved
-- If settings.json update fails: Show error and rollback
-
-## Example Output
-
+Display format:
 ```
 🔍 Analyzing permission patterns...
 
-Found 48 debug logs with 127 permission requests.
-You have 34 patterns already approved.
+Found: [X] debug logs with [Y] permission requests
+Existing: [Z] patterns already approved
+New suggestions: [N]
 
-📋 NEW PERMISSION SUGGESTIONS:
+✅ SAFE patterns (read-only):
+  • Pattern - Used X times
 
-✅ SAFE patterns (read-only, no side effects):
-  • Bash(cat:*) - Used 6 times
-  • Bash(git status:*) - Used 5 times
-
-⚠️  REVIEW patterns (may have side effects):
-  • Bash(mkdir:*) - Used 3 times
-  • Read(//c/Users/mglenn/**) - Used 3 times
+⚠️ REVIEW patterns (may have side effects):
+  • Pattern - Used X times
 
 Would you like to:
 1. Add all SAFE patterns only
@@ -81,12 +73,95 @@ Would you like to:
 3. Select individually
 4. Skip (no changes)
 
-Your choice: [Ask user]
+Your choice:
 ```
 
-## Notes
+### 6. Get User Choice
 
-- Never suggest git commit or git push (these require manual approval per CLAUDE.md)
-- Path patterns should be reviewed for privacy before adding
-- The analyzer respects existing settings and won't suggest duplicates
-- Results are based on actual usage patterns from debug logs
+Parse input:
+- "1" → patterns_to_add = safe_patterns
+- "2" → patterns_to_add = safe_patterns + review_patterns
+- "3" → prompt for each pattern individually
+- "4" → patterns_to_add = [] (exit)
+
+### 7. Update Settings
+
+If patterns_to_add not empty:
+
+1. Read settings.json
+2. Get current permissions.allow array
+3. Merge: new_list = current + patterns_to_add
+4. Remove duplicates: unique_list = list(set(new_list))
+5. Sort alphabetically
+6. Update permissions.allow
+7. Write settings.json
+
+### 8. Verify & Report
+
+Show summary:
+```
+✅ Successfully added [N] new permission patterns
+
+Summary:
+- Analyzed: [X] debug logs
+- Suggested: [Y] new patterns
+- Added: [N] patterns
+
+Settings updated at: ~/.claude/settings.json
+```
+
+### 9. Cleanup
+
+```bash
+rm -f ./tmp/analyze-permissions-temp.json
+rmdir ./tmp 2>/dev/null
+```
+
+## Safety Categories
+
+**SAFE (auto-approve safe):**
+- Read operations
+- Bash(ls:*), Bash(pwd:*), Bash(cat:*)
+- Bash(git status:*), Bash(git log:*)
+
+**REVIEW (examine carefully):**
+- Write operations
+- Bash(mkdir:*), Bash(rm:*)
+- Broad path patterns (//c/Users/**)
+
+**DANGEROUS (never suggest):**
+- Bash(git commit:*), Bash(git push:*)
+- Bash(rm -rf:*)
+- Write(~/**), Edit(/etc/**)
+
+## Error Handling
+
+Script not found:
+```
+ERROR: Analyzer script not found
+Check: ~/.claude/scripts/permission-analyzer.py
+```
+
+No debug logs:
+```
+No debug logs found
+Use Claude Code to generate usage history first
+```
+
+No new suggestions:
+```
+All frequently-used patterns already approved
+Your permissions are up to date!
+```
+
+JSON parse error:
+```
+Failed to parse analyzer output
+Check ./tmp/analyze-permissions-temp.json
+```
+
+Settings update failed:
+```
+Failed to update settings.json
+Check file permissions and JSON validity
+```
