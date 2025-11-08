@@ -45,6 +45,7 @@
       "Write"
     ]
   },
+  "model": "opusplan",
   "statusLine": {
     "type": "command",
     "command": "pwsh -NoProfile -Command \"$input | & \\\"$env:USERPROFILE\\.claude\\claude-status.ps1\\\"\""
