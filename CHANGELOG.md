@@ -4,6 +4,124 @@ This file tracks changes to the personal Claude Code ruleset (`~/.claude/CLAUDE.
 
 ---
 
+## 2025-11-08: Git Workflow & Commit Command Optimization
+
+**Optimized commit.md for Haiku 4.5:** (38% reduction)
+- Before: 114 lines, 478 words, ~621 tokens
+- After: 87 lines, 297 words, ~386 tokens
+- Removed philosophical framing and skill references
+- Inlined critical security patterns and commit types
+- Pure procedural checklist format
+- HEREDOC template provided inline
+
+**Optimized git-workflow/SKILL.md:** (36% reduction)
+- Before: 139 lines, 761 words, ~989 tokens
+- After: 97 lines, 485 words, ~631 tokens
+- Removed duplicate push behavior section
+- Reduced examples from 6 to 2
+- Converted commit types to table format
+- Consolidated security warnings
+- Removed meta-commentary
+
+**Architecture Benefits:**
+- Total system: 1,610 → 1,017 tokens (37% reduction)
+- Command is purely procedural with inline data
+- Skill contains philosophy and rationale
+- No help separation needed (simpler workflow than prompt engineering)
+- Follows "Commands execute, skills educate" principle
+
+**Haiku 4.5 Improvements:**
+- Direct checklist format in command
+- No "consult skill" indirection
+- Critical data (patterns, types) inline for execution
+- Removed verbose headers and examples
+
+---
+
+## 2025-11-08: Prompt Engineering Optimization & Help Separation
+
+**Created `/prompt-help` command for documentation:**
+- New dedicated help command (106 lines, ~260 tokens)
+- Routes help requests to skill for documentation
+- Handles "all techniques" or specific technique queries
+- Clean separation: execution vs documentation
+
+**Optimized prompt-engineering skill:** (56% reduction)
+- Before: 499 lines, ~4,209 tokens
+- After: 328 lines, ~1,872 tokens
+- Consolidated 3 quick references into 1 decision tree
+- Converted selection guide to compact decision tree format
+- Compressed anti-patterns to table format
+- Streamlined effectiveness indicators
+- Kept all 7 technique templates intact (essential functionality)
+
+**Updated optimize-prompt.md:**
+- Now 106 lines, ~411 tokens (previously had help content removed)
+- Help mode redirects to `/prompt-help` command
+- Pure execution logic, no documentation overhead
+
+**Architecture Benefits:**
+- Normal optimization: Loads 2,283 tokens (optimize + skill)
+- Help request: Loads 2,132 tokens (prompt-help + skill)
+- ~40% token savings vs combined approach
+- Clean command separation: optimize, help, skill
+
+---
+
+## 2025-11-08: Major Command & Skill Optimization for Haiku 4.5
+
+**Optimized for Haiku 4.5 Compatibility:**
+
+**Changed:**
+- **ruleset-optimization skill**: Removed procedural overlap, kept philosophy only (36% reduction)
+  - Before: 262 lines, ~1,414 tokens
+  - After: 161 lines, ~900 tokens
+  - Removed numbered workflow steps, kept principles and guidelines
+
+- **optimize-ruleset.md command**: Massive streamlining (81% reduction!)
+  - Before: 1,792 lines, ~9,673 tokens
+  - After: 356 lines, ~1,821 tokens
+  - Removed philosophical explanations (now references skill)
+  - Simplified to direct procedural steps
+  - Kept all critical bash commands and logic
+
+- **analyze-permissions.md command**: Enhanced with clear phases (+124% for clarity)
+  - Before: 91 lines, ~580 tokens
+  - After: 299 lines, ~1,300 tokens
+  - Added 6-phase structure for better Haiku execution
+  - Added explicit error handling and edge cases
+
+- **optimize-prompt.md command**: Integrated help functionality
+  - Added frontmatter with argument-hints for all 7 techniques + help
+  - Merged prompt-help.md content into main command
+  - Deleted redundant prompt-help.md file
+
+**Key Principle Applied:**
+- **"Commands execute, skills educate"** - Clear separation of concerns
+- Commands: Direct procedural steps (WHAT and HOW)
+- Skills: Philosophy and principles (WHY and WHEN)
+
+**Total Impact:**
+- System-wide token reduction: **66%** (11,667 → 4,021 tokens)
+- optimize-ruleset alone: **7,852 tokens saved per invocation**
+- Better Haiku 4.5 compatibility through:
+  - Direct imperatives ("Run X" not "Consider running X")
+  - Numbered lists instead of nested explanations
+  - No meta-commentary or educational asides
+  - Clear phase structure throughout
+
+**Files Modified:**
+- `~/.claude/skills/ruleset-optimization/SKILL.md`
+- `~/.claude/commands/optimize-ruleset.md`
+- `~/.claude/commands/analyze-permissions.md`
+- `~/.claude/commands/optimize-prompt.md` (enhanced)
+- `~/.claude/commands/prompt-help.md` (deleted - merged into optimize-prompt)
+
+**Backups Created:**
+- `.backup` files preserved for all modified files
+
+---
+
 ## 2025-11-05: Prompt Engineering Skill and Commands
 
 **Added:**
