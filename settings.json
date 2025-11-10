@@ -26,6 +26,7 @@
       "Bash(python:*)",
       "Bash(test:*)",
       "Bash(timeout:*)",
+      "Bash(tree:*)",
       "Bash(type:*)",
       "Bash(uname:*)",
       "Bash(which:*)",
