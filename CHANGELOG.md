@@ -4,6 +4,113 @@ This file tracks changes to the personal Claude Code ruleset (`~/.claude/CLAUDE.
 
 ---
 
+## 2025-11-10: Ruleset Optimization (History Analysis)
+
+**First `/optimize-ruleset personal` run:**
+- Analyzed all 242 history entries (Nov 7-10, 2025)
+- Created CHECKPOINT file for incremental future runs
+- Identified 7 patterns from actual usage
+
+**HIGH priority additions** (based on 3+ occurrences):
+- **KISS principle** added to Critical Rules: "Default to SIMPLEST solution. No features 'just in case'. MVP first."
+- **Absolute paths** added to Communication: "Always provide absolute paths in responses (not relative)"
+- **Real-time checklist tracking** enhanced in TodoWrite: "mark [x] IMMEDIATELY after each completion"
+- **Idempotent scripts** added to Common Pitfalls: "ALL setup/install scripts MUST be safely re-runnable"
+
+**MEDIUM priority additions** (2 occurrences):
+- **Complete tasks** added to Tool Preferences: "Complete ALL steps of clear-scope tasks without asking between steps"
+- **Detect state directly** added to Common Pitfalls: "Detect state from system directly" (avoid tracking files)
+- **Fail-fast** already covered in development-philosophy skill (no change needed)
+
+**Results:**
+- Before: 82 lines, 410 words (~533 tokens)
+- After: 87 lines, 468 words (~608 tokens)
+- Added: +75 tokens (14% increase)
+- Addresses: 9 checklist reminders, 3 KISS violations, 3 idempotency issues, 32 path clarifications per session
+
+**Token efficiency maintained:**
+- Personal ruleset stays minimal (87 lines, under 100-line target)
+- 10 skills (13,616 tokens) load only when relevant
+- Progressive disclosure architecture preserved
+
+---
+
+## 2025-11-10: Skills Consolidation from GitHub Copilot Analysis
+
+**Analyzed 7 GitHub Copilot projects** and consolidated best practices into Claude Code skills:
+- agent-spike, mentat-cli, joyride-python, ContextMenuEditor, onboard, attempt-one, onramp
+- 18 .specstory chat histories analyzed
+- ~6,000 lines of Copilot instructions reviewed
+
+**Created GitHub Copilot template repository:**
+- Location: `/c/Projects/copilot-instructions-template/`
+- 9 consolidated instruction files (python, dockerfile, devcontainer, testing, makefile, ignore-files, self-explanatory-code, copilot_customization, mcp_services)
+- 4 prompt files (commit, check, test, lint)
+- Ready for reuse across projects
+
+**Enhanced python-workflow skill:**
+- Merged patterns from copilot-python-workflow
+- Added UV-exclusive commands table (✅ correct vs ❌ incorrect)
+- Added CRITICAL section for zero warnings tolerance
+- Added CQRS/IoC architecture patterns
+- Enhanced testing workflow (targeted during dev, full before commit)
+- Self-explanatory code philosophy
+- Optimized for Haiku 4.5 (directive language, tables, examples preserved)
+
+**Enhanced container-projects skill:**
+- Merged patterns from copilot-container-workflow
+- Added CRITICAL section for Docker Compose V2 (no `version:`, use `docker compose`)
+- Added 12-factor app compliance table
+- Added security-first practices (non-root users, Alpine images)
+- Multi-stage build examples
+- Health check patterns
+- DevContainer configuration
+- DNS configuration (.internal vs .local)
+- Optimized for Haiku 4.5 (doubled practical examples, 3 tables for scanning)
+
+**Created testing-workflow skill:**
+- New standalone skill for testing patterns
+- CRITICAL: Zero warnings tolerance with status table
+- Targeted testing during development
+- Full suite before commits
+- >80% coverage on critical paths
+- AAA pattern, fixtures, mocking, parametrization
+- Pre-commit requirements checklist
+- Optimized for Haiku 4.5
+
+**Enhanced development-philosophy skill:**
+- Merged copilot-communication-style and copilot-autonomous-execution patterns
+- Added BE BRIEF communication (action over commentary, one sentence max)
+- Added autonomous execution workflow (7 steps)
+- Self-recovery from errors
+- Complete tasks fully before returning
+- Execute immediately, don't ask permission
+- Optimized for Haiku 4.5
+
+**Updated CLAUDE.md:**
+- Updated skill descriptions to reflect enhanced capabilities
+- Added testing-workflow to core workflows
+- Consolidated "Copilot-Derived Patterns" into core workflows
+- Updated Python skill: uv-exclusive, zero warnings, CQRS
+- Updated Containers skill: Compose V2, 12-factor, multi-stage
+- Updated Development Philosophy: BE BRIEF, autonomous execution
+- Maintained under 100 lines (85 lines)
+
+**All Copilot references removed:**
+- Skills rewritten as native Claude Code guidance
+- Adapted applyTo frontmatter → activation triggers
+- Adapted .github/ directory → .claude/ directory
+- Adapted copilot-instructions.md → CLAUDE.md references
+- No "Copilot" branding in any skill
+
+**Token efficiency:**
+- Skills auto-activate based on project signals
+- Examples preserved for pattern recognition
+- Directive language for Haiku 4.5
+- Tables and lists for scanability
+
+---
+
 ## 2025-11-08: Git Workflow & Commit Command Optimization
 
 **Optimized commit.md for Haiku 4.5:** (38% reduction)
