@@ -6,11 +6,13 @@
 4. **No proactive file creation** - Only create files when explicitly requested
 5. **No backup files** - Git handles version control
 6. **No time estimates** - They're consistently inaccurate
+7. **KISS principle** - Default to SIMPLEST solution. No features "just in case". MVP first.
 
 ## Communication & Code Style
 
 ### Communication
 - Be concise and direct
+- Always provide absolute paths in responses (not relative)
 - Use clear headings and structure
 - Ask for clarification when requirements are ambiguous
 - Avoid excessive emojis
@@ -33,19 +35,23 @@
 - Specialized tools (Read/Edit/Grep/Glob) > bash commands
 - Parallel execution for independent operations
 - Task tool for complex multi-step work
+- Complete ALL steps of clear-scope tasks without asking between steps
 
 ### TodoWrite Usage
 **Use for:** 3+ step tasks, complex planning, user-requested lists
 **Skip for:** Single/trivial tasks, informational requests
-**Rules:** Mark in_progress before starting, complete immediately after finishing, one in_progress max
+**Rules:** Mark in_progress before starting, mark [x] IMMEDIATELY after each completion, one in_progress max
 
 ## Common Pitfalls to Avoid
 - `/c/Users/...` paths in Python → use `os.path.expanduser('~/')`
 - Committing without explicit request
 - Proactive file creation
 - Assuming project structure without checking
-- Manual .venv paths → let package managers handle
+- Manual .venv activation in uv projects → use `uv run`
+- Unnecessary command flags → `-m` only for modules, not scripts
 - Complex heredocs → use Task tool instead
+- Non-idempotent scripts → ALL setup/install scripts MUST be safely re-runnable
+- State tracking files → Detect state from system directly
 
 ### Platform-Specific (Windows)
 - Python: Use `os.path.expanduser('~/')` NOT `/c/Users/...`
@@ -59,14 +65,20 @@
 
 **Skills load automatically when relevant** - conserving context for unrelated work.
 
-- **Python**: `uv run python`, virtual env handling, type hints
+### Core Workflows
+- **Python**: uv-exclusive commands, zero warnings, CQRS/IoC patterns, testing after changes
+- **Testing**: pytest, zero warnings policy, targeted tests, >80% coverage, mocking
 - **Git**: Security scan, semantic commits, explicit push only
 - **Web Projects**: package.json, React/Next.js/Vue patterns
-- **Containers**: Docker, docker-compose, Kubernetes
+- **Containers**: Docker Compose V2, 12-factor app, security-first, multi-stage builds
+
+### Specialized
 - **Multi-Agent AI**: .spec/ dirs, STATUS.md, lessons/
+- **Development Philosophy**: BE BRIEF, autonomous execution, experiment-driven, fail-fast
 
 **Manual-only skills:**
 - **Prompt Engineering**: `/optimize-prompt`, `/prompt-help` commands
+- **Ruleset Optimization**: `/optimize-ruleset` command
 
 See `~/.claude/skills/*/SKILL.md` for details.
 
