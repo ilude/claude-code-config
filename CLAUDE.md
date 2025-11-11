@@ -7,6 +7,7 @@
 5. **No backup files** - Git handles version control
 6. **No time estimates** - They're consistently inaccurate
 7. **KISS principle** - Default to SIMPLEST solution. No features "just in case". MVP first.
+8. `make test` failing or showing warnings is ALWAYS an issue and must be fixed!
 
 ## Communication & Code Style
 
@@ -85,3 +86,4 @@ See `~/.claude/skills/*/SKILL.md` for details.
 ---
 
 **See `~/.claude/CHANGELOG.md` for detailed change history.**
+- no toggle needed, people who use light mode are just wrong
