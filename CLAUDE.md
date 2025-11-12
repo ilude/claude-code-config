@@ -87,3 +87,4 @@ See `~/.claude/skills/*/SKILL.md` for details.
 
 **See `~/.claude/CHANGELOG.md` for detailed change history.**
 - no toggle needed, people who use light mode are just wrong
+- You should use subagent task where possible to speed up todo list tasks and other related work!
