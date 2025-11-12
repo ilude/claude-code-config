@@ -1,0 +1,16 @@
+{
+  "hooks": [
+    {
+      "name": "inject-sessions",
+      "event": "UserPromptSubmit",
+      "script": "hooks/inject-sessions.py",
+      "description": "Auto-inject session list context for /pickup and /snapshot commands",
+      "matchers": [
+        {
+          "field": "prompt",
+          "regex": "^/(pickup|snapshot)"
+        }
+      ]
+    }
+  ]
+}
