@@ -1,0 +1,28 @@
+# Lessons Learned
+
+[Organized by category, not chronologically]
+
+---
+
+## [Feature/Category Name]
+
+### Pattern: [Pattern Name]
+- **Context**: [Why needed]
+- **Solution**: [What worked] → `file:line`
+- **Gotcha**: [What tripped us up]
+- **Use when**: [Future scenarios]
+
+### Pattern: [Another Pattern]
+- **Context**: [Problem]
+- **Solution**: [Fix] → `file:line`
+- **Gotcha**: [Watch out for]
+
+---
+
+## [Another Category]
+
+[More patterns as discovered]
+
+---
+
+[KEEP IT BULLETS - No essays. Only write what you'll reference again.]

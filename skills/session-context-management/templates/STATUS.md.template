@@ -1,0 +1,21 @@
+# Status Log
+
+[Newest at top - reverse chronological]
+
+---
+
+## YYYY-MM-DD HH:MM - [What we did]
+✅/❌ [Outcome]
+Next: [Action]
+[Why/Blocker only if non-obvious]
+
+---
+
+## YYYY-MM-DD HH:MM - [Previous]
+✅ [Worked]
+❌ [Broken]
+Next: [Fix it]
+
+---
+
+[Keep entries SHORT - this is breadcrumbs, not a diary]

@@ -1,0 +1,36 @@
+# Quick Resume
+
+Last: [YYYY-MM-DD HH:MM]
+
+## Right Now
+[One sentence - what are we doing THIS INSTANT]
+
+## Last 5 Done
+1. ✅ [Most recent]
+2. ✅ [Previous]
+3. ✅ [Earlier]
+4. ✅ [Earlier]
+5. ✅ [Earliest]
+
+## In Progress
+- [Active item 1]
+- [Active item 2]
+
+## Paused
+[Empty unless context-switched]
+- [Feature] - [Why paused]
+
+## Tests
+**[Framework]**: X pass / Y fail
+- ❌ [test-name] - [why]
+
+## Blockers
+[List or "None"]
+
+## Next 3
+1. [Immediate]
+2. [Then]
+3. [After]
+
+---
+Details → STATUS.md
