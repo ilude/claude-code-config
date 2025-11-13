@@ -68,7 +68,7 @@ Before writing to CURRENT.md, STATUS.md, or LESSONS.md, scan content for sensiti
 - Test results: "3 pass, 1 fail", "Coverage 85%"
 - Status: "Blocked on API", "Waiting for review"
 - Patterns: "Use uv run python", "Prefer Edit over Write"
-- Paths: src/auth/login.py
+- File paths: ALWAYS use relative paths (src/auth/login.py) NEVER absolute paths (C:\Users\...)
 
 ### Validation Process:
 1. Review entire content block before writing
@@ -121,6 +121,16 @@ project-root/
 ---
 
 ## File Format Templates
+
+**CRITICAL: Use Relative Paths Only**
+
+When writing file paths in session files, ALWAYS use relative paths from project root:
+- ✅ GOOD: `src/auth/login.py`, `tests/test_auth.py`, `README.md`
+- ❌ BAD: `C:\Users\mglenn\projects\myapp\src\auth\login.py`, `/home/user/code/app/main.py`
+
+**Rationale**: Session files may be committed and shared. Absolute paths expose system details and break portability.
+
+---
 
 ### CURRENT.md - Quick Resume
 **Purpose**: Resume work in < 2 minutes | **Max Size**: ~100 lines | **Update**: After milestones (~1-2 hours work)
@@ -209,7 +219,7 @@ Next: Fix playwright config
 
 ### Pattern: [Name]
 - Context: [Why we needed this]
-- Solution: [What worked] → [file:line]
+- Solution: [What worked] → [relative/path/to/file:line]
 - Gotcha: [What tripped us up]
 - Use when: [Future scenarios]
 
