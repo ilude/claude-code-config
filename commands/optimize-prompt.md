@@ -7,7 +7,9 @@ argument-hint: [help|meta-prompting|recursive-review|deep-analyze|multi-perspect
 
 Transform a basic prompt into an enhanced prompt using advanced prompting techniques.
 
-For techniques, templates, and philosophy, see the `prompt-engineering` skill.
+For techniques, templates, and philosophy, see the `structured-analysis` skill.
+
+This command leverages a tiered framework of 12 prompting techniques organized into 3 tiers based on complexity and use case.
 
 ## Process
 Parse → Select → Apply → Output
@@ -20,7 +22,7 @@ If ARG starts with "help": Direct to `/prompt-help [technique]` and exit without
 
 ### Step 1: Invoke Skill
 ```
-Use Skill tool: prompt-engineering
+Use Skill tool: structured-analysis
 ```
 
 ### Step 2: Parse Input
