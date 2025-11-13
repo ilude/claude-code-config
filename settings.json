@@ -22,6 +22,8 @@
       "Bash(ls:*)",
       "Bash(make:*)",
       "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(printf:*)",
       "Bash(pwd:*)",
       "Bash(python:*)",
       "Bash(test:*)",
