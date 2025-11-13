@@ -5,30 +5,37 @@ argument-hint: [feature-name]
 
 Capture a snapshot of the current session state.
 
-**Context inference priority:**
-1. If explicit feature-name provided via $ARGUMENTS → use that (highest priority)
-2. If no argument, check conversation context to infer active feature:
-   - Recent `.session/feature/[name]/` file reads/writes (CURRENT.md, STATUS.md, LESSONS.md)
+## Context Inference (Feature Name)
+
+**Priority order:**
+
+1. **Explicit argument**: If `$ARGUMENTS` provided → use that (highest priority)
+2. **Infer from context**: Check conversation for:
+   - Recent `.session/feature/[name]/` file reads/writes
    - Active todo list mentioning feature names
    - Recent discussion about specific feature work
-3. If active feature is CLEAR from context → snapshot automatically without asking
-4. If ambiguous or NO clear feature → list available sessions and ask which to snapshot
+3. **If clear from context** → use inferred name automatically
+4. **If ambiguous or unclear** → List available sessions and prompt user: "Which feature should I snapshot?"
 
-Create or update the CURRENT.md file with:
-- Timestamp
-- Right Now (one sentence current state)
-- Last 5 Done (terse bullets)
-- In Progress items
-- Paused items (if any)
-- Test status
-- Blockers
-- Next 3 actions
+**CRITICAL**: If unable to infer feature-name, MUST prompt user explicitly. Never guess or skip this step.
 
-This is a manual failsafe for capturing state before:
-- System reboots
-- Meetings/interruptions
-- Context switches
-- Risky refactoring
-- End of day
+---
 
-Format using the session-context-management skill's CURRENT.md template.
+## Execution
+
+Once feature-name is determined:
+
+1. **Verify .gitignore** includes `.session/` directory
+   - If missing: Add it to prevent accidental commits
+
+2. **Activate session-context-management skill** (if not already active)
+
+3. **Follow skill instructions**: See "Snapshot Creation" section in skill for complete implementation:
+   - Create/verify directory
+   - Create CURRENT.md (capture current state + todos)
+   - Append to STATUS.md (log entry)
+   - Create/preserve LESSONS.md
+   - Verify all files created
+   - Report success to user
+
+**All implementation details are in the session-context-management skill.**

@@ -5,21 +5,32 @@ argument-hint: [feature-name]
 
 Resume work on a session.
 
-If feature-name is provided: $ARGUMENTS
-If not provided, list available active sessions from .session/feature/ and ask which to resume.
+## Feature Name Selection
 
-Read the CURRENT.md file for the specified session and:
-1. Summarize "Right Now" status
-2. Show last completed item
-3. Identify blockers (if any)
-4. Start with "Next 3 #1" action
+1. **If `$ARGUMENTS` provided**: Use that feature-name
+2. **If not provided**:
+   - List available active sessions from `.session/feature/`
+   - Prompt user: "Which session would you like to resume?"
+   - Only show **active sessions** (not `.session/completed/`)
 
-Resume format:
-```
-Resuming [feature-name]: [Right Now]
-Last done: [Last item from Done list]
-Next: [Next 3 #1]
-[Blockers if any]
-```
+**CRITICAL**: Never assume which session to resume. Always confirm with user if not explicitly specified.
 
-Only scan **active sessions** from .session/feature/ (not .session/completed/).
+---
+
+## Execution
+
+Once feature-name is determined:
+
+1. **Verify .gitignore** includes `.session/` directory
+   - If missing: Add it to prevent accidental commits
+
+2. **Activate session-context-management skill** (if not already active)
+
+3. **Follow skill instructions**: See "Pickup/Resume" section in skill for complete implementation:
+   - Read CURRENT.md
+   - Show last 2-3 STATUS.md entries
+   - Check LESSONS.md (remind if empty after 5+ entries)
+   - Display resume format to user
+   - Begin with "Next 3 #1" action
+
+**All implementation details are in the session-context-management skill.**

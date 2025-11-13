@@ -10,158 +10,40 @@ Analyze debug logs for frequently-requested permissions. Filter out existing pat
 ## Execution Workflow
 
 ### 1. Run Analyzer
+Verify script exists and execute with temp directory: `python ~/.claude/scripts/permission-analyzer.py --json ./tmp/analyze-permissions-temp.json --min-count 3`
 
-Check script exists:
-```bash
-test -f ~/.claude/scripts/permission-analyzer.py || exit 1
-```
+### 2. Read & Filter
+Load current allow list from `~/.claude/settings.json` to identify existing patterns.
 
-Create temp directory and run:
-```bash
-mkdir -p ./tmp
-python ~/.claude/scripts/permission-analyzer.py --json ./tmp/analyze-permissions-temp.json --min-count 3
-```
+### 3. Parse & Categorize
+Extract suggestions from JSON output. For each: skip if already allowed; categorize by safety level (safe/review/dangerous).
 
-### 2. Read Current Permissions
+### 4. Present Results
+Display new patterns grouped by safety with usage counts. Show 4 options: add safe only, add all, select individually, or skip.
 
-Load existing patterns from settings.json:
-```bash
-settings_path=~/.claude/settings.json
-```
+### 5. Handle User Choice
+Map input 1-4 to corresponding action (1=safe, 2=all, 3=individual, 4=skip).
 
-Extract current allow list (will use this to filter duplicates).
+### 6. Update Settings
+Read settings.json → merge patterns → deduplicate → sort → write back to permissions.allow.
 
-### 3. Parse Analyzer Results
-
-Read JSON output:
-```bash
-temp_file=./tmp/analyze-permissions-temp.json
-```
-
-Get suggestions array from JSON.
-
-### 4. Filter & Categorize
-
-For each suggestion:
-1. Check if pattern already in allow list → skip if yes
-2. Check safety level:
-   - "safe" → add to safe_patterns list
-   - "risky" → add to review_patterns list
-   - "dangerous" → skip (never suggest)
-
-Result: Two lists of NEW patterns only (duplicates removed).
-
-### 5. Present Results
-
-Display format:
-```
-🔍 Analyzing permission patterns...
-
-Found: [X] debug logs with [Y] permission requests
-Existing: [Z] patterns already approved
-New suggestions: [N]
-
-✅ SAFE patterns (read-only):
-  • Pattern - Used X times
-
-⚠️ REVIEW patterns (may have side effects):
-  • Pattern - Used X times
-
-Would you like to:
-1. Add all SAFE patterns only
-2. Add all patterns (SAFE + REVIEW)
-3. Select individually
-4. Skip (no changes)
-
-Your choice:
-```
-
-### 6. Get User Choice
-
-Parse input:
-- "1" → patterns_to_add = safe_patterns
-- "2" → patterns_to_add = safe_patterns + review_patterns
-- "3" → prompt for each pattern individually
-- "4" → patterns_to_add = [] (exit)
-
-### 7. Update Settings
-
-If patterns_to_add not empty:
-
-1. Read settings.json
-2. Get current permissions.allow array
-3. Merge: new_list = current + patterns_to_add
-4. Remove duplicates: unique_list = list(set(new_list))
-5. Sort alphabetically
-6. Update permissions.allow
-7. Write settings.json
-
-### 8. Verify & Report
-
-Show summary:
-```
-✅ Successfully added [N] new permission patterns
-
-Summary:
-- Analyzed: [X] debug logs
-- Suggested: [Y] new patterns
-- Added: [N] patterns
-
-Settings updated at: ~/.claude/settings.json
-```
-
-### 9. Cleanup
-
-```bash
-rm -f ./tmp/analyze-permissions-temp.json
-rmdir ./tmp 2>/dev/null
-```
+### 7. Report & Cleanup
+Display summary of added patterns. Remove temp file.
 
 ## Safety Categories
 
-**SAFE (auto-approve safe):**
-- Read operations
-- Bash(ls:*), Bash(pwd:*), Bash(cat:*)
-- Bash(git status:*), Bash(git log:*)
-
-**REVIEW (examine carefully):**
-- Write operations
-- Bash(mkdir:*), Bash(rm:*)
-- Broad path patterns (//c/Users/**)
-
-**DANGEROUS (never suggest):**
-- Bash(git commit:*), Bash(git push:*)
-- Bash(rm -rf:*)
-- Write(~/**), Edit(/etc/**)
+| Category | Examples |
+|----------|----------|
+| **SAFE** | Read ops: Bash(ls:*), Bash(pwd:*), Bash(cat:*), Bash(git status:*) |
+| **REVIEW** | Write ops: Bash(mkdir:*), Bash(rm:*), broad patterns (//c/Users/**) |
+| **DANGEROUS** | Bash(git commit:*), Bash(push:*), Bash(rm -rf:*), Write(~/**) |
 
 ## Error Handling
 
-Script not found:
-```
-ERROR: Analyzer script not found
-Check: ~/.claude/scripts/permission-analyzer.py
-```
-
-No debug logs:
-```
-No debug logs found
-Use Claude Code to generate usage history first
-```
-
-No new suggestions:
-```
-All frequently-used patterns already approved
-Your permissions are up to date!
-```
-
-JSON parse error:
-```
-Failed to parse analyzer output
-Check ./tmp/analyze-permissions-temp.json
-```
-
-Settings update failed:
-```
-Failed to update settings.json
-Check file permissions and JSON validity
-```
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Script not found | Analyzer missing | Verify ~/.claude/scripts/permission-analyzer.py exists |
+| No debug logs | No usage history | Run Claude Code to generate debug logs |
+| No new suggestions | All patterns approved | Permissions already up to date |
+| JSON parse error | Corrupted output | Check ./tmp/analyze-permissions-temp.json |
+| Settings update failed | File/JSON issue | Verify permissions and JSON validity in settings.json |

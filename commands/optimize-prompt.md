@@ -9,29 +9,12 @@ Transform a basic prompt into an enhanced prompt using advanced prompting techni
 
 For techniques, templates, and philosophy, see the `prompt-engineering` skill.
 
-## Process Overview
-1. Parse input to extract techniques and base prompt
-2. Invoke prompt-engineering skill for templates
-3. Select technique(s) if not specified
-4. Apply template(s) to base prompt
-5. Output enhanced prompt with usage notes
+## Process
+Parse → Select → Apply → Output
 
 ## Help Mode
 
-If ARG starts with "help":
-1. Direct user to `/prompt-help` command
-2. If ARG is "help [technique]", suggest `/prompt-help [technique]`
-3. EXIT without optimization
-
-Example response:
-```
-For comprehensive documentation on prompt engineering techniques, use:
-- `/prompt-help` - View all techniques overview
-- `/prompt-help deep-analyze` - View specific technique details
-
-Or specify techniques directly:
-- `/optimize-prompt meta-prompting "your prompt"`
-```
+If ARG starts with "help": Direct to `/prompt-help [technique]` and exit without optimization.
 
 ## Normal Optimization Mode
 
@@ -48,15 +31,17 @@ Extract:
 - Base prompt (the actual prompt to enhance)
 
 ### Step 3: Select Techniques
-If no techniques specified, use skill's decision tree:
-- Analysis/evaluation → deep-analyze
-- Decision/choice → multi-perspective
-- Vague/unclear → meta-prompting
-- Explanation → deliberate-detail or reasoning-scaffold
-- Improvement → recursive-review
-- Design/create → meta-prompting,reasoning-scaffold
-- Risk/security → deep-analyze
-- Default → meta-prompting
+
+| Prompt Type | Technique |
+|--|--|
+| Analysis/evaluation | deep-analyze |
+| Decision/choice | multi-perspective |
+| Vague/unclear | meta-prompting |
+| Explanation | deliberate-detail, reasoning-scaffold |
+| Improvement | recursive-review |
+| Design/create | meta-prompting, reasoning-scaffold |
+| Risk/security | deep-analyze |
+| Default | meta-prompting |
 
 ### Step 4: Apply Template(s)
 1. Get template(s) from skill
@@ -90,18 +75,20 @@ If no techniques specified, use skill's decision tree:
 
 ## Technique Combinations
 
-If multiple techniques specified:
-- Apply in order: meta-prompting → recursive-review → deep-analyze → multi-perspective
-- Ensure templates don't conflict
-- Combine outputs logically
+If multiple techniques specified, apply in order:
+1. meta-prompting
+2. recursive-review
+3. deep-analyze
+4. multi-perspective
 
 ## Token Multipliers
 
-Reference skill for detailed costs. Quick reference:
-- meta-prompting: 1.5-2x
-- recursive-review: 1.5-2x
-- deep-analyze: 2-3x
-- multi-perspective: 3-4x
-- deliberate-detail: 2-3x
-- reasoning-scaffold: 1.5-2x
-- temperature-simulation: 2x
+| Technique | Cost |
+|--|--|
+| meta-prompting | 1.5-2x |
+| recursive-review | 1.5-2x |
+| deep-analyze | 2-3x |
+| multi-perspective | 3-4x |
+| deliberate-detail | 2-3x |
+| reasoning-scaffold | 1.5-2x |
+| temperature-simulation | 2x |
