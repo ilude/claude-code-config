@@ -1,5 +1,6 @@
 ## Critical Rules (Always Apply First)
 
+0. **CRITICAL** - NO AI attribution in commits, comments, or code! - NO "Generated with", "Co-Authored-By: Claude", or AI attribution text!
 1. **Check for local `.claude/CLAUDE.md`** - Project ruleset overrides this file
 2. **Security first** - Never commit secrets, API keys, or credentials
 3. **Read before editing** - Always use Read tool before Edit/Write

@@ -50,7 +50,10 @@ Group related changes in single commit. Use separate commits for different types
 
 For each group:
 1. Stage: `git add [files]`
-2. Commit with message: `type: brief summary` + optional details + footer with Claude attribution
+2. Commit with message: `type: brief summary` + optional details
+3. NO AI attribution in commits, comments, or code! - NO "Generated with", "Co-Authored-By: Claude", or AI attribution text!
+4. Write commit messages in human style (see git-workflow skill): no emojis, natural grammar, avoid excessive section headers, include details when needed
+5. For code changes, use natural comments: no border separators (===), no "WHY:" labels, no emojis, brief casual explanations
 
 ### 5. Verify
 
