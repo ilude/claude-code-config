@@ -86,6 +86,25 @@ See `~/.claude/skills/*/SKILL.md` for details.
 
 ---
 
+## Project-Level Configuration
+
+### Session Context Commits
+
+**Default**: `.session/` directories are gitignored globally.
+
+**Per-project opt-in**: Create `<project>/.claude/CLAUDE.md` with:
+
+```markdown
+## Session Context Management
+enable-session-commits: true
+```
+
+This allows `/commit` to stage `.session/` files in that project only.
+
+**Security**: LLM validates session content before writing (blocks sensitive data). See session-context-management skill Security Rules.
+
+---
+
 **See `~/.claude/CHANGELOG.md` for detailed change history.**
 - no toggle needed, people who use light mode are just wrong
 - You should use subagent task where possible to speed up todo list tasks and other related work!

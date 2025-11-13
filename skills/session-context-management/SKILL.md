@@ -47,6 +47,37 @@ description: Maintain "just enough" context across work sessions using CURRENT.m
 
 ---
 
+## Security Rules (BLOCKING)
+
+**CRITICAL: Validate content before writing session files**
+
+Before writing to CURRENT.md, STATUS.md, or LESSONS.md, scan content for sensitive data. If detected, REFUSE to write and warn user.
+
+### Prohibited Patterns (BLOCK & REFUSE):
+- API keys: API_KEY=, sk-ant-, sk-proj-, ANTHROPIC_API_KEY=
+- Passwords: PASSWORD=, pwd=, passwd=, password:
+- Tokens: TOKEN=, Bearer, token:, access_token=
+- Private keys: -----BEGIN PRIVATE KEY-----, -----BEGIN RSA
+- Credentials: connection strings with passwords, username/password pairs
+- PII: SSN, credit cards, personal email addresses in creds
+- CUI: classified info, proprietary secrets
+
+### Safe Content (ALLOW):
+- Timestamps: 2025-01-13 14:30
+- Task descriptions: "Implement login", "Fix auth bug"
+- Test results: "3 pass, 1 fail", "Coverage 85%"
+- Status: "Blocked on API", "Waiting for review"
+- Patterns: "Use uv run python", "Prefer Edit over Write"
+- Paths: src/auth/login.py
+
+### Validation Process:
+1. Review entire content block before writing
+2. Check for prohibited patterns
+3. If found: STOP, show detected content, refuse to write
+4. If clean: Proceed with write
+
+---
+
 ## Low Context Warning Protocol
 
 **Automatic Monitoring**: Check token budget in `<system-reminder>` tags throughout conversation.

@@ -43,8 +43,32 @@ Commit types:
 | chore | Config (.gitignore, pyproject.toml) |
 | build | Build/CI (Dockerfile, .github/) |
 | deps | Dependencies (uv.lock, requirements.txt) |
+| session-context | Session context updates (.session/ files) |
 
 Group related changes in single commit. Use separate commits for different types.
+
+### 3.5. Session Context Files
+
+Check if project enables session commits:
+```bash
+[ -f .claude/CLAUDE.md ] && grep -q "enable-session-commits: true" .claude/CLAUDE.md
+```
+
+**If enabled AND `.session/` modified:**
+- Group: ALL `.session/` files into single commit
+- Type: `session-context`
+- Stage: `git add .session/`
+- Message: `session-context: update session context for [feature-names]`
+  - Extract feature names from `.session/feature/` directories
+  - Format: comma-separated list
+
+**Command**:
+```bash
+git commit -m "session-context: update session context for $(ls .session/feature 2>/dev/null | paste -sd, - | sed 's/,/, /g' || echo 'unknown')"
+```
+
+**If disabled:**
+- Skip (remains gitignored)
 
 ### 4. Create Commits
 
