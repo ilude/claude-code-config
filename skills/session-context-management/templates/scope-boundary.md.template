@@ -1,0 +1,84 @@
+# Scope Boundary Framework
+
+{BASE_TARGET}
+
+## Phase 1: Core Requirement
+
+**Exact problem being solved:**
+{DEFINE_PROBLEM_STATEMENT}
+
+**Success criteria:**
+- {SUCCESS_CRITERION_1}
+- {SUCCESS_CRITERION_2}
+- {SUCCESS_CRITERION_3}
+
+**Who is requesting this and why?**
+{REQUESTER_AND_RATIONALE}
+
+## Phase 2: Explicit In-Scope
+
+**Minimum viable changes required:**
+- {CHANGE_1}
+- {CHANGE_2}
+- {CHANGE_3}
+
+**Files that must be modified:**
+- {FILE_1}
+- {FILE_2}
+- {FILE_3}
+
+**Tests that must pass:**
+- {TEST_1}
+- {TEST_2}
+- {TEST_3}
+
+**Documentation that must update:**
+- {DOC_1}
+- {DOC_2}
+
+## Phase 3: Explicit Out-of-Scope
+
+**Tempting improvements to defer:**
+- {TEMPTING_ITEM_1}
+- {TEMPTING_ITEM_2}
+
+**Related but separate concerns:**
+- {RELATED_ITEM_1}
+- {RELATED_ITEM_2}
+
+**Nice-to-have features:**
+- {FEATURE_1}
+- {FEATURE_2}
+
+**Speculative abstractions:**
+- {SPECULATION_1}
+- {SPECULATION_2}
+
+**Performance optimizations (unless proven bottleneck):**
+- {OPTIMIZATION_1}
+- {OPTIMIZATION_2}
+
+## Phase 4: Boundary Justification
+
+**Why out-of-scope items are excluded:**
+- {ITEM}: {JUSTIFICATION}
+- {ITEM}: {JUSTIFICATION}
+
+**Evidence needed to bring items in-scope:**
+- To include {ITEM}: {EVIDENCE_REQUIRED}
+- To include {ITEM}: {EVIDENCE_REQUIRED}
+
+**Follow-up tasks for deferred work:**
+- [ ] {FOLLOWUP_1}
+- [ ] {FOLLOWUP_2}
+- [ ] {FOLLOWUP_3}
+
+## Phase 5: Scope Verification
+
+- [ ] Does this solve the stated problem?
+- [ ] Are all changes justified by requirements?
+- [ ] Can anything be removed?
+- [ ] Are we building the MVP or the dream version?
+
+**Verification Notes:**
+{VERIFICATION_NOTES}

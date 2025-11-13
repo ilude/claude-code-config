@@ -1,0 +1,34 @@
+# Idempotency Audit: {BASE_TARGET}
+
+## Phase 1: Execution Flow Analysis
+- Map all state-modifying operations
+- Identify checks before modifications
+- Document assumptions about initial state
+- List all files/resources created/modified/deleted
+
+## Phase 2: Re-Run Simulation
+- What happens on first run? (clean state)
+- What happens on second run? (no changes needed)
+- What happens after partial failure? (mid-execution abort)
+- What happens with existing config? (state already present)
+
+## Phase 3: Failure Mode Analysis
+- Network interruption mid-operation
+- File/resource already exists
+- Dependency already installed/configured
+- Permission denied scenarios
+- Disk space exhausted mid-write
+
+## Phase 4: Idempotency Improvements
+- Add existence checks before creation
+- Use atomic operations where possible
+- Make operations conditional on current state
+- Design cleanup/rollback strategies
+- Handle partial completion gracefully
+
+## Phase 5: Verification Test Plan
+- Test clean install
+- Test re-run (should succeed, no changes)
+- Test partial failure recovery
+- Test with existing state
+- Confirm: Safe to run multiple times
