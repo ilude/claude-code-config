@@ -10,14 +10,20 @@ Capture a snapshot of the current session state.
 **Priority order:**
 
 1. **Explicit argument**: If `$ARGUMENTS` provided → use that (highest priority)
-2. **Infer from context**: Check conversation for:
-   - Recent `.session/feature/[name]/` file reads/writes
+2. **Check existing sessions**: Find git root, check if `.session/feature/` exists
+   - List all existing session directories: `ls .session/feature/`
+   - If we're in a subdirectory (e.g., `projects/mentat/`), check if a session exists matching that subdirectory name
+   - Example: Working in `projects/mentat/` → check if `.session/feature/mentat/` exists
+3. **Infer from recent context**:
+   - Recent `.session/feature/[name]/` file reads/writes in conversation
    - Active todo list mentioning feature names
    - Recent discussion about specific feature work
-3. **If clear from context** → use inferred name automatically
-4. **If ambiguous or unclear** → List available sessions and prompt user: "Which feature should I snapshot?"
+   - Current working directory/project name
+4. **If single existing session matches** → use that automatically
+5. **If multiple possibilities** → List them and ask: "Which session? [options] or create new?"
+6. **If no existing sessions and unclear** → Suggest based on working directory, ask to confirm
 
-**CRITICAL**: If unable to infer feature-name, MUST prompt user explicitly. Never guess or skip this step.
+**CRITICAL**: Prefer existing sessions over creating new ones. Never guess - always confirm if ambiguous.
 
 ---
 
