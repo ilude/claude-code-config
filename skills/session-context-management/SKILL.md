@@ -124,12 +124,16 @@ project-root/
 
 **CRITICAL: Use Relative Paths Only**
 
-When writing file paths in session files, ALWAYS use relative paths from project root:
-- ✅ GOOD: `src/auth/login.py`, `tests/test_auth.py`, `README.md`
-- ❌ BAD: `C:\Users\mglenn\projects\myapp\src\auth\login.py`, `/home/user/code/app/main.py`
+When writing file paths in session files, ALWAYS use relative paths from the feature's working directory:
+- ✅ GOOD: `frontend/src/routes/+page.svelte`, `api/main.py`, `docker-compose.yml`
+- ❌ BAD: `C:\Projects\agent-spike\projects\mentat\api\main.py`, `projects/mentat/frontend/src/...`
+- ❌ BAD: `/home/user/code/app/main.py`
 
-**Rationale**: Session files may be committed and shared. Absolute paths expose system details and break portability.
-
+**Rationale**:
+- Session files may be shared or moved
+- Absolute paths expose system details and break portability
+- Paths relative to feature directory are most natural when working in that context
+- Example: `.session/feature/mentat/` should use `api/main.py` not `projects/mentat/api/main.py`
 ---
 
 ### CURRENT.md - Quick Resume
