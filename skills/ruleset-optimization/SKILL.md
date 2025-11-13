@@ -11,75 +11,55 @@ This skill provides comprehensive guidelines for optimizing Claude rulesets to m
 
 **PRIMARY GOAL**: Minimize baseline context, maximize signal-to-noise ratio.
 
-Context efficiency is THE most important optimization principle. Every token counts.
+**Core Strategy:**
+- **Skills for domain-specific rules** (git, python, web, containers): auto-load when relevant, 30-70% context reduction when inactive
+- **CLAUDE.md minimal**: project overview, quick start, project-specific patterns, skill references only
+- **Progressive disclosure**: baseline=always-needed (~20%), details=on-demand via skills (~80%)
 
-### Core Strategy
+## Decision Framework
 
-1. **Use skills for domain-specific rules** (git, python, web, containers)
-   - Only loaded when relevant (file patterns, project structure)
-   - 30-70% context reduction when inactive
-   - Progressive disclosure of detailed procedures
-
-2. **Keep CLAUDE.md minimal**
-   - Project overview and purpose (essential context)
-   - Quick start checklist
-   - Project-specific patterns not covered by skills
-   - References to skills for details
-
-3. **Progressive disclosure wins**
-   - Baseline = always-needed info only (~20% of content)
-   - Details = loaded on-demand via skills (~80% of content)
-   - Result: Faster responses, better reasoning
-
-## Prioritization Framework
-
-### Token Savings Calculation
-
-1. **Calculate extraction value**
-   - Count tokens in section to be moved
-   - Estimate usage frequency (always/sometimes/rarely)
-   - Calculate savings: tokens × (1 - usage_frequency)
-
-2. **Priority thresholds**
-   - High-impact: 500+ tokens, used <50% of time
-   - Medium-impact: 200-500 tokens, used <30% of time
-   - Low-impact: <200 tokens or used >70% of time
-
-3. **Report efficiency gains**
-   - Before: X tokens baseline
-   - After: Y tokens baseline, Z with skills (when needed)
-   - Savings: (X - Y) tokens baseline (N% reduction)
-
-## Content Classification
+### Extraction Decision Tree
+```
+Is content >200 tokens?
+├─ No → Keep in CLAUDE.md
+└─ Yes → Is it procedural?
+    ├─ No → Keep in CLAUDE.md (policy)
+    └─ Yes → Is it used <70% of sessions?
+        ├─ No → Keep in CLAUDE.md (always needed)
+        └─ Yes → Extract to skill (saves tokens)
+```
 
 ### Move to Skills (Procedural "How-To")
-- Step-by-step procedures
-- Domain-specific workflows
-- Tool usage patterns
-- Complex decision trees
-- Language/framework-specific rules
-- Optional best practices
+- Step-by-step procedures, domain workflows, tool patterns, decision trees
+- Language/framework-specific rules, optional best practices
 
 ### Keep in CLAUDE.md (Policy "What/Why")
-- Core values and principles
-- Always-applicable preferences
-- Security requirements
-- File operation policies
-- Communication style
-- Project structure overview
+- Core values, always-applicable preferences, security requirements
+- File operation policies, communication style, project overview
+
+### Token Savings Calculation
+**Formula:** tokens × (1 - usage_frequency)
+
+**Priority thresholds:**
+- High: 500+ tokens, used <50% of time
+- Medium: 200-500 tokens, used <30% of time
+- Low: <200 tokens or used >70% of time
+
+**Report format:**
+- Before: X tokens baseline
+- After: Y tokens baseline, Z with skills (when needed)
+- Savings: (X - Y) tokens baseline (N% reduction)
 
 ## Deduplication Strategy
 
-### Personal vs Project Rulesets
-- **Personal** (~/.claude/CLAUDE.md): Universal defaults
-- **Project** (.claude/CLAUDE.md): Project-specific overrides
-- Never duplicate content between them
-- Project ruleset always takes precedence
+**Personal vs Project Rulesets:**
+- Personal (~/.claude/CLAUDE.md): universal defaults
+- Project (.claude/CLAUDE.md): project-specific overrides, takes precedence
+- Never duplicate between them
 
-### Across Skills
-- Each skill should have clear, non-overlapping scope
-- Reference other skills rather than duplicating content
-- Use skill dependencies when logical flow requires it
+**Across Skills:**
+- Clear, non-overlapping scope per skill
+- Reference other skills vs duplicating content
 
 ## Creating Effective Skills
 
@@ -108,24 +88,11 @@ Brief introduction and purpose.
 - Slash commands: /optimize-prompt, /commit
 - Explicit requests: "optimize this ruleset"
 
-## Extraction Decision Tree
-
-```
-Is content >200 tokens?
-├─ No → Keep in CLAUDE.md
-└─ Yes → Is it procedural?
-    ├─ No → Keep in CLAUDE.md (policy)
-    └─ Yes → Is it used <70% of sessions?
-        ├─ No → Keep in CLAUDE.md (always needed)
-        └─ Yes → Extract to skill (saves tokens)
-```
-
-## Anti-Patterns to Avoid
-
-❌ **Over-extraction:** Don't create skills for tiny sections (<100 tokens)
-❌ **Under-referencing:** Always add reference when removing content
-❌ **Duplication:** Never duplicate between personal/project or across skills
-❌ **Poor organization:** Don't mix multiple domains in one skill
+### Anti-Patterns
+- Over-extraction: No skills for <100 tokens
+- Under-referencing: Always add reference when removing content
+- Duplication: Never duplicate between personal/project or across skills
+- Poor organization: Don't mix domains in one skill
 
 ## Optimization Impact Examples
 

@@ -1,3 +1,8 @@
+---
+name: session-context-management
+description: Maintain "just enough" context across work sessions using CURRENT.md, STATUS.md, and LESSONS.md files. Activate when tasks take >15 minutes, touch 3+ files, interruptions likely, or scope uncertain. Includes /snapshot and /pickup commands for saving and resuming work. ADHD-friendly, token-efficient approach.
+---
+
 # Session Context Management
 
 **Purpose**: Maintain "just enough" context across work sessions for resuming non-trivial development tasks
@@ -8,25 +13,63 @@
 
 ## When to Activate
 
-Activate this skill when:
-- Task estimated > 15 minutes
-- Work involves multiple files/steps
-- User might context-switch (meetings, interruptions, rabbit holes)
-- Implementation scope could expand during work
-- Future-you needs to remember "what/why"
+**Activate this skill when ANY of these are true:**
 
-**Default**: If in doubt, activate - overhead is minimal when done right.
+1. **Task duration**: Work will take more than 15 minutes
+2. **Multiple files/steps**: Work touches 3+ files OR has 3+ distinct steps
+3. **Interruptions likely**: Meeting soon, end of day approaching, or working on unfamiliar code
+4. **Scope might expand**: Starting with "just a quick fix" on complex code
+5. **User explicitly invokes `/snapshot` or `/pickup` commands**
+
+**Default rule**: If unsure whether to activate → activate (overhead is minimal).
+
+**Do NOT activate for**: Single file edits under 10 minutes, trivial tasks, purely informational requests.
 
 ---
 
-## Core Principles
+## Core Principles & Anti-Patterns
 
-✅ **"Just Enough" > Complete** - Document to resume, not archive
-✅ **Tokens Aren't Free** - Every line costs tokens to write/read
-✅ **User Can Fill Gaps** - They remember context better than docs
-✅ **Err on Side of Less** - Add detail only when painful without it
-✅ **ADHD-Friendly** - Interruptions and rabbit holes are normal
-✅ **Walk Away Anytime** - Never lose context mid-work
+**✅ Do:**
+- "Just Enough" > Complete - Document to resume, not archive
+- Tokens Aren't Free - Every line costs tokens
+- User Can Fill Gaps - They remember context better than docs
+- Err on Side of Less - Add detail only when painful without it
+- ADHD-Friendly - Interruptions and rabbit holes are normal
+- Walk Away Anytime - Never lose context mid-work
+
+**❌ Don't:**
+- Complete audit trails - Not an archive
+- Explaining obvious things - User knows context
+- Upfront planning - Document as you go
+- Perfect grammar - Bullets > prose
+- Waiting for session end - Update continuously
+- Rigid templates - Adapt to needs
+
+---
+
+## Low Context Warning Protocol
+
+**Automatic Monitoring**: Check token budget in `<system-reminder>` tags throughout conversation.
+
+**When < 10% Remaining (~<20k tokens):**
+1. Capture snapshot immediately using CURRENT.md format
+2. Alert user: "⚠️ Context usage at [X%] ([used]/[total] tokens). Recommend `/clear` soon to avoid interruption."
+3. Provide resume prompt:
+   ```
+   Copy this to resume after /clear:
+
+   Resume [feature-name]: [Right Now from CURRENT.md]
+   Last done: [Last item from Done list]
+   Next: [Next 3 #1]
+   [Blockers if any]
+   ```
+
+**When < 5% Remaining (~<10k tokens):**
+1. Urgent snapshot capture
+2. Strong warning: "🚨 Context critical - [remaining] tokens left. `/clear` now recommended to avoid interruption."
+3. Provide ready-to-use resume prompt
+
+**Why this approach**: No waiting for context compaction, seamless continuation, user control, preserves work.
 
 ---
 
@@ -46,66 +89,74 @@ project-root/
 
 ---
 
-## CURRENT.md - Quick Resume
+## File Format Templates
 
-**Purpose**: Resume work in < 2 minutes
-**Max Size**: ~100 lines (enforce brevity)
-**Update**: After milestones (~1-2 hours work)
+### CURRENT.md - Quick Resume
+**Purpose**: Resume work in < 2 minutes | **Max Size**: ~100 lines | **Update**: After milestones (~1-2 hours work)
 
-**Sections**:
 ```markdown
 # Quick Resume
-Last: [timestamp]
+
+Last: YYYY-MM-DD HH:MM
 
 ## Right Now
-[One sentence]
+[One sentence describing what you're doing RIGHT NOW]
 
 ## Last 5 Done
-1-5. [Terse bullets]
+1. ✅ [Most recent completed task]
+2. ✅ [Previous completed task]
+3. ✅ [Earlier completed task]
+4. ✅ [Earlier completed task]
+5. ✅ [Earliest completed task]
 
 ## In Progress
-- [Active items]
+[If TodoWrite active: Copy active todos here]
+[If no TodoWrite: List what's being worked on from context]
+- [Active item 1]
+- [Active item 2]
 
-## Paused (if any)
-- [Context switches]
+## Paused
+[Leave empty UNLESS you context-switched to different feature]
+[If paused items exist: "- [Feature name] - [Why paused]"]
 
 ## Tests
-Pass/Fail + which failing
+[If tests were run, show results. If not run yet, write "Not run yet"]
+**[Framework name]**: X pass / Y fail
+- ❌ [failing-test-name] - [why it's failing]
 
 ## Blockers
-[Or "None"]
+[List specific blockers OR write "None"]
 
 ## Next 3
-1-3. [Immediate actions]
+1. [The immediate next action - be specific]
+2. [Then do this]
+3. [After that]
+
+---
+Details → STATUS.md
 ```
 
-**Rule**: If you can't resume from CURRENT.md alone, add detail. Otherwise, don't.
+### STATUS.md - Terse Log
+**Purpose**: Chronological breadcrumbs | **Size**: No limit, but keep entries SHORT | **Update**: After meaningful steps
+
+```markdown
+# Status Log
+
+[Append-only log - oldest to newest]
 
 ---
 
-## STATUS.md - Terse Log
-
-**Purpose**: Chronological breadcrumbs
-**Size**: No limit, but keep entries SHORT
-**Update**: After meaningful steps
-
-**Format**:
-```markdown
-## [Date Time] - [What]
+## YYYY-MM-DD HH:MM - [What we did]
 ✅/❌ [Outcome]
 Next: [Action]
-[Only add Why/Blocker if non-obvious]
+[Why/Blocker only if non-obvious]
+
+---
+
+[Keep entries SHORT - this is breadcrumbs, not a diary]
 ```
 
-**Bad (too verbose)**:
-```
-## 2025-01-12 14:35 - Login Page Implementation
-**What**: Created login page with certificate and credential auth
-**Why**: Phase 2 requirement, foundation for all protected routes
-...150 more tokens...
-```
-
-**Good (just enough)**:
+**Good example:**
 ```
 ## 2025-01-12 14:35 - Login page
 ✅ Cert & cred auth working
@@ -113,15 +164,16 @@ Next: [Action]
 Next: Fix playwright config
 ```
 
----
-
-## LESSONS.md - Bullet Points
-
-**Purpose**: Extract patterns that worked/didn't
-**Update**: After completing features
-**Format**: Bullets, not essays
+### LESSONS.md - Bullet Points
+**Purpose**: Extract patterns that worked/didn't | **Update**: After completing features | **Format**: Bullets, not essays
 
 ```markdown
+# Lessons Learned
+
+[Organized by category, not chronologically]
+
+---
+
 ## [Feature/Category]
 
 ### Pattern: [Name]
@@ -129,6 +181,10 @@ Next: Fix playwright config
 - Solution: [What worked] → [file:line]
 - Gotcha: [What tripped us up]
 - Use when: [Future scenarios]
+
+---
+
+[KEEP IT BULLETS - No essays. Only write what you'll reference again.]
 ```
 
 **Rule**: If you won't reference it again, don't write it.
@@ -163,7 +219,112 @@ Next: Fix playwright config
 5. **Archive session**: Auto-suggest moving to `.session/completed/[feature-name]`
    - Offer to execute: `mv .session/feature/[name] .session/completed/[name]`
    - Ask for confirmation before archiving
-   - Document why feature is complete in final STATUS.md entry
+
+---
+
+## Snapshot Creation (Manual `/snapshot` Command)
+
+**Purpose**: Manual failsafe for capturing state before interruptions, reboots, context switches, or risky work.
+
+**When to Snapshot**: Before system reboots, meetings/interruptions, context switches, risky refactoring, end of work day, or any time user requests `/snapshot`
+
+### High-Level Process:
+
+1. **Verify .gitignore includes `.session/`** (see Activation Instructions)
+2. **Validate feature-name** - No `/`, `\`, or special chars. Sanitize if needed, ask user to confirm.
+3. **Create directory**: `mkdir -p ".session/feature/<feature-name>"`
+4. **Create/Overwrite CURRENT.md** with exact template structure above (populate with current state)
+5. **Append to STATUS.md** with timestamp and outcome (create if missing with header)
+6. **Create LESSONS.md if missing** (never modify if exists - human-curated only)
+7. **Verify all 3 files exist**: `test -f` each file
+8. **Show confirmation**: `ls -lh` directory and report sizes
+
+**Fill CURRENT.md with:**
+- Timestamp (YYYY-MM-DD HH:MM)
+- Right Now: One sentence what you're doing
+- Last 5 Done: From conversation/TodoWrite
+- In Progress: Copy active todos or current work items
+- Paused: Only if context-switched
+- Tests: Results if run, else "Not run yet"
+- Blockers: Specific blockers or "None"
+- Next 3: Immediate next actions
+
+**Append to STATUS.md:**
+- Timestamp + brief description
+- ✅ What succeeded
+- ❌ What failed/incomplete
+- Next: What should happen next
+
+### Error Handling:
+- **mkdir fails**: Report error, check permissions
+- **Feature name invalid**: Sanitize, ask user to confirm
+- **.session is file not directory**: Report error, ask user to resolve
+- **Verification fails**: Attempt recreate, report which files succeeded/failed
+- **Never claim success without verification**
+
+---
+
+## Pickup/Resume (Manual `/pickup` Command)
+
+**Purpose**: Resume work from a saved session.
+
+### High-Level Process:
+
+1. **Verify .gitignore** (same as snapshot)
+2. **Read CURRENT.md** - Extract: "Right Now", "Last 5 Done" #1, "Blockers", "Next 3" #1
+   - If missing: List available sessions, ask which to resume, STOP
+3. **Read STATUS.md** - Show last 2-3 entries (timestamp + outcome)
+   - If missing: Skip (no error)
+4. **Check LESSONS.md** - If STATUS entries ≥5 and LESSONS empty/missing, remind user to document patterns
+5. **Display resume format:**
+   ```
+   Resuming [feature-name]: [Right Now]
+
+   Last done: [Item #1 from Last 5 Done]
+
+   [If STATUS.md exists:]
+   Recent work:
+   - [Timestamp] [Outcome summary]
+   - [Timestamp] [Outcome summary]
+
+   Next: [Item #1 from Next 3]
+
+   [If blockers:]
+   ⚠️ Blockers: [Blockers]
+
+   [If LESSONS reminder needed:]
+   💡 Consider documenting patterns in LESSONS.md
+   ```
+6. **Begin work immediately** - Execute "Next 3 #1" action, don't ask what to do
+
+### Error Handling:
+- **Session directory doesn't exist**: List available, ask which to resume
+- **CURRENT.md missing**: Report error, offer to create new or pick different session
+- **CURRENT.md malformed**: Read what's available, warn about missing sections
+
+---
+
+## Activation Instructions
+
+When task meets criteria OR `/snapshot`/`/pickup` invoked:
+
+1. **Verify .gitignore** (MUST do before creating session files):
+   - Check if `.gitignore` exists: `test -f .gitignore`
+   - If exists: Read and check for `.session/` line. Add if missing under "Session-specific directories" section.
+   - If missing: Create with minimum content:
+     ```
+     # Session-specific directories
+     .session/
+     ```
+   - **Why**: Prevents accidental commits of session working memory
+
+2. **Create structure**: `.session/feature/[feature-name]/`
+
+3. **Initialize files**: CURRENT.md, STATUS.md, LESSONS.md (see templates above)
+
+4. **Tell user**: "Session context tracking active for [feature-name]"
+
+5. **Update frequently**: After milestones, stay terse, monitor token budget
 
 ---
 
@@ -171,36 +332,12 @@ Next: Fix playwright config
 
 **Every 5-10 features**, review and ask:
 
-1. **Did we document TOO MUCH?**
-   - Walls of text nobody reads?
-   - Sections never referenced?
-
-2. **Did we document TOO LITTLE?**
-   - Couldn't resume work?
-   - Lost important "why"?
-
-3. **Token efficiency?**
-   - Documentation vs actual work ratio
-   - Can we be more terse?
-
-4. **What sections matter?**
-   - Which parts of CURRENT.md actually used?
-   - Which STATUS.md entries were valuable?
+1. **Did we document TOO MUCH?** - Walls of text nobody reads? Sections never referenced?
+2. **Did we document TOO LITTLE?** - Couldn't resume work? Lost important "why"?
+3. **Token efficiency?** - Documentation vs actual work ratio. Can we be more terse?
+4. **What sections matter?** - Which parts actually used?
 
 **Goal**: Continuous improvement toward "just enough"
-
-**Command**: `/review-session-context` (future enhancement)
-
----
-
-## Anti-Patterns
-
-❌ **Complete audit trails** - Not an archive
-❌ **Explaining obvious things** - User knows context
-❌ **Upfront planning** - Document as you go
-❌ **Perfect grammar** - Bullets > prose
-❌ **Waiting for session end** - Update continuously
-❌ **Rigid templates** - Adapt to needs
 
 ---
 
@@ -224,55 +361,3 @@ Works alongside:
 - `python-workflow` / `web-projects` - Same context system
 
 This skill provides working memory. Other skills provide domain knowledge.
-
----
-
-## Low Context Warning Protocol
-
-**Automatic Monitoring**: Check token budget in `<system-reminder>` tags throughout conversation.
-
-### When < 10% Remaining (~<20k tokens):
-1. **Capture snapshot immediately** using CURRENT.md format
-2. **Alert user**: "⚠️ Context usage at [X%] ([used]/[total] tokens). Recommend `/clear` soon to avoid interruption."
-3. **Provide resume prompt**:
-   ```
-   Copy this to resume after /clear:
-
-   Resume [feature-name]: [Right Now from CURRENT.md]
-   Last done: [Last item from Done list]
-   Next: [Next 3 #1]
-   [Blockers if any]
-   ```
-
-### When < 5% Remaining (~<10k tokens):
-1. **Urgent snapshot capture**
-2. **Strong warning**: "🚨 Context critical - [remaining] tokens left. `/clear` now recommended to avoid interruption."
-3. **Provide ready-to-use resume prompt** (same format as above)
-
-**Why this approach:**
-- No waiting for context compaction (can take 30+ seconds)
-- Seamless continuation with provided resume prompt
-- User control over when to clear
-- Preserves work even if we hit limit unexpectedly
-
----
-
-## Activation Instructions
-
-When task meets criteria, Claude should:
-
-1. **Create structure**: `.session/feature/[feature-name]/`
-2. **Initialize files**: CURRENT.md, STATUS.md, LESSONS.md
-3. **Tell user**: "Session context tracking active for [feature-name]"
-4. **Update frequently**: After milestones, not sessions
-5. **Stay terse**: "Just enough" principle always
-6. **Monitor context**: Check token budget warnings and proactively warn user when low
-
----
-
-## Templates
-
-See `templates/` directory for:
-- `CURRENT.md.template` - Quick resume format
-- `STATUS.md.template` - Terse log format
-- `LESSONS.md.template` - Bullet point format

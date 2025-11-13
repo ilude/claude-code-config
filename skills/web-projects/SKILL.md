@@ -5,14 +5,13 @@ description: Guidelines for web development projects using JavaScript/TypeScript
 
 # Web Projects
 
-Guidelines for working with web development projects using modern JavaScript/TypeScript frameworks.
+Guidelines for modern JavaScript/TypeScript web projects.
 
 ## Project Structure Recognition
 
 ### Package Managers
 - Check `package.json` for dependencies and scripts
-- Identify package manager: npm, yarn, or pnpm
-- Look for lock files: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`
+- Detect from lock files: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`
 
 ### Framework Detection
 Look for framework-specific configuration files:
@@ -26,14 +25,12 @@ Look for framework-specific configuration files:
 ## Development Workflow
 
 ### Package Manager Usage
-Respect the project's chosen package manager:
+Respect the project's package manager:
 - **npm**: `npm install`, `npm run`, `npm test`
 - **yarn**: `yarn install`, `yarn`, `yarn test`
 - **pnpm**: `pnpm install`, `pnpm run`, `pnpm test`
 
-**Detection:**
-- Presence of lock file indicates preferred package manager
-- `.npmrc`, `.yarnrc`, or `pnpm-workspace.yaml` configs
+**Detection:** Lock file or config (`.npmrc`, `.yarnrc`, `pnpm-workspace.yaml`)
 
 ### Common Scripts
 Check `package.json` "scripts" section for:
@@ -46,16 +43,14 @@ Check `package.json` "scripts" section for:
 ## Code Patterns
 
 ### Component Patterns
-- **Respect existing patterns** - Don't change established component structure
-- Check for component naming conventions
-- Look for existing patterns in components directory
-- Follow established import/export patterns
+- **Respect existing patterns** - Don't change established structure
+- Check naming conventions and import/export patterns
+- Review existing components directory
 
 ### Testing Setup
 - **Respect existing test framework** - Jest, Vitest, Testing Library, Cypress, Playwright
-- Check test configuration in `package.json` or dedicated config files
-- Look for existing test patterns
-- Follow established test file naming (`.test.js`, `.spec.ts`, etc.)
+- Check config in `package.json` or dedicated files
+- Follow established patterns and naming (`.test.js`, `.spec.ts`, etc.)
 
 ### Styling Approach
 Identify and follow the project's styling method:
@@ -76,22 +71,8 @@ Identify and follow the project's styling method:
 
 ## Quick Reference
 
-**Before making changes:**
-- ✅ Check `package.json` for scripts and dependencies
-- ✅ Identify package manager from lock file
-- ✅ Review existing component patterns
-- ✅ Check framework-specific configurations
-
-**Development:**
-- Use project's package manager consistently
-- Follow existing code organization
-- Respect established patterns and conventions
-- Check test setup before writing tests
-
 **Common mistakes to avoid:**
 - ❌ Mixing package managers
-- ❌ Ignoring existing component patterns
-- ❌ Using different styling approach than project
 - ❌ Changing test framework without discussion
 
 ---

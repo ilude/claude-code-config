@@ -10,48 +10,41 @@ Comprehensive git workflow principles for all git operations.
 ## Critical Rules
 
 ### Push Behavior
-**NEVER push without explicit "push" keyword in request.**
-
-- "commit my changes" → NO push
-- "commit and push" → YES push
-
-Pushing is irreversible and affects team members. After committing without push, inform user: "Changes committed locally. Run 'git push' to push to remote."
+**NEVER push without explicit "push" keyword.** Examples: "commit my changes" → NO push, "commit and push" → YES push. After committing without push, inform: "Changes committed locally. Run 'git push' to push to remote."
 
 ### When to Commit
 Only commit when explicitly requested. Never commit proactively.
 
 ## Security First
 
-### Before ANY Commit
-
 **Always scan for secrets. If found, STOP and refuse to commit.**
 
-Critical patterns include:
+Critical patterns:
 - API keys (API_KEY=, sk-ant-, sk-proj-)
 - Tokens (TOKEN=, Bearer)
 - Passwords (PASSWORD=, pwd=)
 - Private keys (-----BEGIN)
-- Hardcoded credentials in code
+- Hardcoded credentials
 
 If detected:
-1. Show specific files/lines
-2. Suggest .gitignore additions
-3. Recommend environment variables
-4. Refuse even if user insists
+1. Show files/lines
+2. Suggest .gitignore
+3. Recommend env vars
+4. Refuse even if insisted
 
 ## Commit Organization
 
 ### Types
 | Type | Purpose | Examples |
 |------|---------|----------|
-| docs | Documentation | README, *.md, comments |
-| test | Tests | test_*.py, *.spec.*, tests/ |
+| docs | Documentation | README, *.md |
+| test | Tests | test_*.py, *.spec.* |
 | feat | New features | New functionality |
 | fix | Bug fixes | Corrections |
 | refactor | Code improvements | No behavior change |
-| chore | Configuration | .gitignore, config files |
+| chore | Configuration | .gitignore, configs |
 | build | Build/CI | Dockerfile, .github/ |
-| deps | Dependencies | lock files, requirements |
+| deps | Dependencies | lock/requirements |
 
 ### Grouping Strategy
 - Single commit: All changes closely related

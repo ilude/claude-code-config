@@ -9,44 +9,27 @@ Guidelines for working with Python projects across different package managers an
 
 ## CRITICAL: Virtual Environment Best Practices
 
-**NEVER reference .venv paths manually** (e.g., `.venv/Scripts/python.exe` or `../../../.venv/`).
+**NEVER reference .venv paths manually** (e.g., `.venv/Scripts/python.exe` or `../../../.venv/`) - causes cross-platform issues and breaks on structure changes.
 
-**ALWAYS use `uv run python`** in uv-based projects, which:
-- Automatically finds project root and correct .venv
-- Works cross-platform (Windows/Linux/Mac)
-- No manual activation needed
-- No path management required
+**ALWAYS use `uv run python`** in uv-based projects (auto-finds venv, works cross-platform, no activation needed):
 
-**Prefer shared root .venv** unless project explicitly requires isolation (saves ~7GB per environment).
-
-**Examples:**
 ```bash
-# ❌ Don't do this (brittle, platform-specific)
-../../../.venv/Scripts/python.exe script.py
-.venv/bin/python script.py
+# ❌ Don't: ../../../.venv/Scripts/python.exe script.py
+# ✅ Do: uv run python script.py
 
-# ✅ Always do this
-uv run python script.py
 uv run python -m module.cli
 ```
 
-**Why this matters**: Manual paths cause cross-platform issues, waste disk space with multiple venvs, and break when project structure changes.
+**Prefer shared root .venv** unless isolation required (saves ~7GB per environment).
 
 ## Python Module CLI Syntax
 
-**When running Python modules as CLI tools**, use the `-m` flag:
+**Use `-m` flag** when running modules as CLIs (tells Python to run module as script, not file):
 
 ```bash
-# ✅ Correct (with -m flag)
-uv run python -m youtube_agent.cli analyze "URL"
-uv run python -m pytest
-uv run python -m pip install package
-
-# ❌ Wrong (missing -m flag - will fail)
-uv run python youtube_agent.cli analyze "URL"
+# ✅ Do: uv run python -m module.cli
+# ❌ Don't: uv run python module.cli  # fails - treats as file path
 ```
-
-The `-m` flag tells Python to run the module as a script. Without it, Python tries to open the module path as a file, which fails.
 
 ## Package Management
 
@@ -63,16 +46,8 @@ The `-m` flag tells Python to run the module as a script. Without it, Python tri
 
 ## Virtual Environments
 
-### Best Practices
-- Let package managers (uv, poetry, etc.) handle venv automatically
-- Don't activate venvs manually - use tool-specific run commands:
-  - UV: `uv run python script.py`
-  - Poetry: `poetry run python script.py`
-  - Standard venv: `python -m venv .venv` then activate
-
-### Common Patterns
+- Use tool-specific run commands (UV: `uv run python`, Poetry: `poetry run python`)
 - Check project ruleset for venv structure (shared vs per-module)
-- Let the tooling abstract the virtual environment
 
 ## Code Style
 
@@ -111,18 +86,11 @@ Check these files for style preferences:
 - Poetry: `poetry run`, `poetry install`, `poetry add`
 - Pip: `pip install`, `python -m pip`
 
-**Never do:**
-- ❌ Manual `.venv` path references
-- ❌ System Python in uv/poetry projects
-- ❌ Mix package managers
-- ❌ Activate venvs manually when tools provide `run` commands
-
-**Always do:**
-- ✅ Use tool-specific run commands (especially `uv run python`)
-- ✅ Use `-m` flag when running Python modules as CLIs
-- ✅ Check `pyproject.toml` for configuration
-- ✅ Follow project's existing patterns
-- ✅ Respect configured code style
+**Key rules:**
+- ✅ Use `uv run python` (never manual .venv paths)
+- ✅ Use `-m` flag for module CLIs
+- ✅ Check `pyproject.toml` for config
+- ❌ Don't mix package managers
 
 ---
 
