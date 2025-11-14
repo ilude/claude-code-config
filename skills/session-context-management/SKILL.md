@@ -114,9 +114,87 @@ project-root/
     └── LESSONS.md    # 💡 Bullet points - What worked/didn't
 ```
 
-**Why `.session/`**: Add to `.gitignore` - this is working memory, not documentation
+**Why `.session/`**: Usually gitignored (working memory, not documentation), UNLESS project has `enable-session-commits: true`
 
 **Why `feature/[feature-name]/`**: Separate contexts for different work streams
+
+---
+
+## Multi-Instance Support
+
+**Scenario**: Multiple Claude instances working on same feature simultaneously
+
+**Solution**: Tagged sections in single files using `[instance-id:session-id]` format
+
+### Instance/Session ID Detection
+
+**Instance ID** (which IDE window):
+```bash
+INSTANCE_ID=$(cat ~/.claude/ide/$CLAUDE_CODE_SSE_PORT.lock 2>/dev/null | python -c "import json, sys; print(json.load(sys.stdin)['authToken'][:8])" 2>/dev/null || echo "unknown")
+```
+
+**Session ID** (which conversation):
+```bash
+SESSION_ID=$(ls -lt ~/.claude/debug/*.txt 2>/dev/null | head -1 | awk '{print $9}' | xargs basename 2>/dev/null | cut -d. -f1 | cut -c1-8 || echo "unknown")
+```
+
+**Combined Tag**: `[$INSTANCE_ID:$SESSION_ID]` (e.g., `[5d72a497:888cf413]`)
+
+### File Format with Multiple Instances
+
+**CURRENT.md** (separate sections per instance):
+```markdown
+# Quick Resume
+
+## [5d72a497:888cf413] Frontend Queue
+Last: 2025-11-13 23:30
+
+### Right Now
+Working on queueing multiple questions without waiting
+
+### Last 5 Done
+1. ✅ Implemented queue system
+...
+
+---
+
+## [a08428d4:3e5380bd] Transcripts
+Last: 2025-11-13 23:28
+
+### Right Now
+Adding timestamp support to archive format
+
+### Last 5 Done
+1. ✅ Fixed quotes escaping
+...
+```
+
+**STATUS.md** (tagged entries):
+```markdown
+# Status Log
+
+---
+
+## [5d72a497:888cf413] 2025-11-13 23:30 - Queue system
+✅ Frontend can queue multiple questions
+Next: Test concurrent requests
+
+---
+
+## [a08428d4:3e5380bd] 2025-11-13 23:28 - Transcript timestamps
+❌ Timestamps not in archive format
+Next: Add timing metadata
+```
+
+**LESSONS.md** (shared, no tags):
+- No instance tags - shared learnings across all instances working on feature
+
+### Behavior
+
+- Each `/snapshot` updates or creates its own `[instance:session]` section
+- Other instances' sections preserved
+- `/pickup` shows all instances for all features
+- Single source of truth per feature, multiple contexts visible
 
 ---
 
@@ -275,7 +353,7 @@ Next: Fix playwright config
 
 ### High-Level Process:
 
-1. **Verify .gitignore includes `.session/`** (see Activation Instructions)
+1. **Check git tracking policy** (see Activation Instructions for logic)
 2. **Validate feature-name** - No `/`, `\`, or special chars. Sanitize if needed, ask user to confirm.
 3. **Create directory**: `mkdir -p ".session/feature/<feature-name>"`
 4. **Create/Overwrite CURRENT.md** with exact template structure above (populate with current state)
@@ -315,7 +393,7 @@ Next: Fix playwright config
 
 ### High-Level Process:
 
-1. **Verify .gitignore** (same as snapshot)
+1. **Check git tracking policy** (see Activation Instructions for logic)
 2. **Read CURRENT.md** - Extract: "Right Now", "Last 5 Done" #1, "Blockers", "Next 3" #1
    - If missing: List available sessions, ask which to resume, STOP
 3. **Read STATUS.md** - Show last 2-3 entries (timestamp + outcome)
@@ -353,15 +431,33 @@ Next: Fix playwright config
 
 When task meets criteria OR `/snapshot`/`/pickup` invoked:
 
-1. **Verify .gitignore** (MUST do before creating session files):
-   - Check if `.gitignore` exists: `test -f .gitignore`
-   - If exists: Read and check for `.session/` line. Add if missing under "Session-specific directories" section.
-   - If missing: Create with minimum content:
-     ```
-     # Session-specific directories
-     .session/
-     ```
-   - **Why**: Prevents accidental commits of session working memory
+1. **Check git tracking policy** (MUST do FIRST before creating session files):
+
+   **Step 1a**: Check if `.claude/CLAUDE.md` exists in project root
+   - Run: `test -f .claude/CLAUDE.md`
+
+   **Step 1b**: If `.claude/CLAUDE.md` exists, search for session commit setting
+   - Use Grep tool: Search for pattern `enable-session-commits:\s*true` in `.claude/CLAUDE.md`
+   - This is a SIMPLE grep search - just look for the exact line
+
+   **Step 1c**: Apply policy based on search result
+   - **IF "enable-session-commits: true" FOUND**:
+     * Session files WILL be committed to git
+     * SKIP all gitignore steps
+     * DO NOT modify `.gitignore`
+     * DO NOT add `.session/` to gitignore
+     * Session files are TRACKED
+
+   - **IF "enable-session-commits: true" NOT FOUND** (or `.claude/CLAUDE.md` doesn't exist):
+     * Session files should NOT be committed
+     * Check if `.gitignore` exists: `test -f .gitignore`
+     * If `.gitignore` exists: Read and check for `.session/` line. Add if missing under "Session-specific directories" section.
+     * If `.gitignore` missing: Create with minimum content:
+       ```
+       # Session-specific directories
+       .session/
+       ```
+     * **Why**: Prevents accidental commits of session working memory
 
 2. **Create structure**: `.session/feature/[feature-name]/`
 
