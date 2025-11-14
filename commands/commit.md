@@ -23,6 +23,24 @@ Automated git commit workflow with security scanning and logical grouping. Use `
 
 If found: STOP, show details, suggest .gitignore, exit.
 
+### 1.5. Git-Crypt Detection (If .gitattributes exists)
+
+**Check for git-crypt configuration:**
+```bash
+[ -f .gitattributes ] && grep -q "filter=git-crypt" .gitattributes
+```
+
+**If git-crypt is configured:**
+1. Read `.gitattributes` to find patterns with `filter=git-crypt`
+2. For each file to commit, check if it matches git-crypt pattern
+3. If matches: EXEMPT from security scan (will be encrypted)
+4. If doesn't match: Apply normal security scanning
+
+**Validation (optional warning):**
+```bash
+git-crypt status >/dev/null 2>&1 || echo "Warning: git-crypt not initialized"
+```
+
 ### 2. Analyze Changes
 
 Run in parallel:

@@ -35,6 +35,29 @@ If detected:
 3. Recommend env vars
 4. Refuse even if insisted
 
+### Git-Crypt Exception
+
+Files marked with `filter=git-crypt` in `.gitattributes` are exempt from security scanning.
+
+**Why safe:**
+- Automatically encrypted before commit
+- Plaintext in working directory, encrypted in repository
+- Explicit protection declaration
+
+**Detection:**
+Check if file matches patterns in `.gitattributes` with `filter=git-crypt` directive.
+
+**Example .gitattributes:**
+```
+secrets/*.json filter=git-crypt diff=git-crypt
+*.key filter=git-crypt diff=git-crypt
+.env.production filter=git-crypt diff=git-crypt
+```
+
+**Validation:**
+- Verify git-crypt is initialized: `git-crypt status`
+- If not initialized, warn user but don't block
+
 ## Commit Organization
 
 ### Types
