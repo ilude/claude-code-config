@@ -23,22 +23,32 @@ Automated git commit workflow with security scanning and logical grouping. Use `
 
 If found: STOP, show details, suggest .gitignore, exit.
 
-### 1.5. Git-Crypt Detection (If .gitattributes exists)
+### 1.5. Git-Crypt Encrypted Files
 
-**Check for git-crypt configuration:**
+**For each modified file, check if git-crypt encrypted:**
 ```bash
-[ -f .gitattributes ] && grep -q "filter=git-crypt" .gitattributes
+git check-attr filter <file>
 ```
 
-**If git-crypt is configured:**
-1. Read `.gitattributes` to find patterns with `filter=git-crypt`
-2. For each file to commit, check if it matches git-crypt pattern
-3. If matches: EXEMPT from security scan (will be encrypted)
-4. If doesn't match: Apply normal security scanning
+**If output contains "git-crypt":**
+- File is encrypted - SKIP security scan
+- Safe to commit (encrypted before pushing to remote)
 
-**Validation (optional warning):**
+**If output contains "unspecified" or no "git-crypt":**
+- File is NOT encrypted - RUN security scan
+- Check for secrets as described in section 1
+
+**Example:**
 ```bash
-git-crypt status >/dev/null 2>&1 || echo "Warning: git-crypt not initialized"
+# .env is encrypted:
+git check-attr filter .env
+# Output: .env: filter: git-crypt
+# → Skip security scan
+
+# config.json is not encrypted:
+git check-attr filter config.json
+# Output: config.json: filter: unspecified
+# → Run security scan
 ```
 
 ### 2. Analyze Changes
