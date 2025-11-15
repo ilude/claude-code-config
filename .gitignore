@@ -37,6 +37,19 @@ Thumbs.db
 # Backup files
 *.bak
 *.tmp
+*.backup
+*.orig
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+.tox/
+.venv/
+venv/
 
 # Temporary output directory
 tmp/
