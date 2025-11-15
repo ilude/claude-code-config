@@ -5,6 +5,8 @@ description: Guidelines for optimizing Claude rulesets and instruction files (CL
 
 # Ruleset Optimization Guidelines
 
+**Auto-activate when:** Working with `CLAUDE.md`, `settings.json`, `SKILL.md` files, `.claude/` directory, or when user mentions ruleset optimization, context efficiency, skill extraction, token savings, or improving Claude Code configuration.
+
 This skill provides comprehensive guidelines for optimizing Claude rulesets to minimize context usage while maximizing effectiveness.
 
 ## Context Efficiency Philosophy

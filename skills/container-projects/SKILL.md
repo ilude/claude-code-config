@@ -5,6 +5,8 @@ description: Guidelines for containerized projects using Docker, Docker Compose,
 
 # Container-Based Projects
 
+**Auto-activate when:** Working with `Dockerfile`, `docker-compose.yml`, `docker-compose.yaml`, `.dockerignore`, Kubernetes manifests (`*.yaml`, `*.yml` in k8s directories), container registries, or when user mentions Docker, containers, orchestration, or deployment workflows.
+
 Guidelines for containerized applications using Docker, Docker Compose, and orchestration tools.
 
 ## CRITICAL: Docker Compose V2 Syntax

@@ -5,6 +5,8 @@ description: Guidelines for web development projects using JavaScript/TypeScript
 
 # Web Projects
 
+**Auto-activate when:** Working with `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `tsconfig.json`, `.eslintrc*`, `vite.config.*`, `next.config.*`, `*.jsx`, `*.tsx`, `*.vue`, `*.svelte`, or when user mentions React, Next.js, Vue, Angular, Svelte, npm, yarn, pnpm, or frontend development.
+
 Guidelines for modern JavaScript/TypeScript web projects.
 
 ## Project Structure Recognition

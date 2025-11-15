@@ -5,6 +5,8 @@ description: Personal development philosophy emphasizing experiment-driven, fail
 
 # Development Philosophy
 
+**Auto-activate when:** User mentions planning, architecture, design decisions, MVP, over-engineering, simplicity, fail-fast, experiment-driven, or asks to apply development principles. Should activate during planning phases of new features or when reviewing proposed implementations.
+
 ## Core Principles
 
 **Execute immediately. Solve real problems. Start simple, iterate based on evidence.**

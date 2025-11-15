@@ -5,6 +5,8 @@ description: Maintain "just enough" context across work sessions using CURRENT.m
 
 # Session Context Management
 
+**Auto-activate when:** Working with `CURRENT.md`, `STATUS.md`, `LESSONS.md`, `.session/` directory, or when user mentions /snapshot, /pickup, resume, session, or context management.
+
 **Purpose**: Maintain "just enough" context across work sessions for resuming non-trivial development tasks
 
 **Philosophy**: Document to resume work, not to create archives. Tokens aren't free. Err on side of less.

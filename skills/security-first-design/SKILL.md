@@ -1,5 +1,7 @@
 # Security-First-Design Skill
 
+**Auto-activate when:** User mentions authentication, authorization, API security, sensitive data, user input, secrets management, encryption, security review, or when working with `.env$` (actual env files, not examples), `credentials.json`, `secrets.yaml`, API keys, authentication systems, or security-critical features.
+
 Systematically evaluate security implications before implementation.
 
 ## When to Activate

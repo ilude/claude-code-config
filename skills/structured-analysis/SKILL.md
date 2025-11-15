@@ -5,6 +5,8 @@ description: Apply structured analytical frameworks to any artifact (prompts, sy
 
 # Structured Analysis Skill
 
+**Auto-activate when:** User mentions analyze, review, validate, critique, framework, deep-analyze, reasoning-scaffold, adversarial-review, or asks to evaluate a plan, system, prompt, architecture, or design. Should activate when user asks "what could go wrong" or "review this".
+
 Apply structured analytical frameworks to ANY artifact: prompts, systems, documents, code, architecture.
 
 **12 Total Frameworks** organized in 3 tiers for easy selection.

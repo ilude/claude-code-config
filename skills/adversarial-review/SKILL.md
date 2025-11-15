@@ -1,5 +1,7 @@
 # Adversarial Review Framework
 
+**Auto-activate when:** User mentions red-team, adversarial review, find flaws, edge cases, blind spots, attack vectors, "what could go wrong", "poke holes in this", or asks to critique/challenge a plan or design.
+
 **Best for**: Red-team attack on plans/systems to find flaws, edge cases, blind spots
 
 ## Template (5 Phases)

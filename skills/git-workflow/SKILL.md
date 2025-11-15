@@ -5,6 +5,8 @@ description: Git workflow and commit guidelines. MUST be activated before ANY gi
 
 # Git Workflow Guidelines
 
+**Auto-activate when:** Working with `.gitignore`, `.gitattributes`, `.git/`, or when user mentions commit, push, git, version control, pull request, branch, merge, or staging changes. Should also activate when bash commands contain `git` (requires conversation parsing).
+
 Comprehensive git workflow principles for all git operations.
 
 ## Critical Rules
