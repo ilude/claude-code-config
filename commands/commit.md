@@ -107,9 +107,53 @@ For each group:
 4. Write commit messages in human style (see git-workflow skill): no emojis, natural grammar, avoid excessive section headers, include details when needed
 5. For code changes, use natural comments: no border separators (===), no "WHY:" labels, no emojis, brief casual explanations
 
-### 5. Verify
+### 5. Verify and Iterate
 
-Run `git status` after all commits created. If uncommitted files remain (and secure), create additional commits.
+Run `git status` after all commits created. **LOOP:** Check for uncommitted files, skip exclusion patterns (see 5.5), categorize and commit remaining legitimate files. **Repeat this loop** until git status shows only excluded files or clean state.
+
+### 5.5. Handle Remaining Files
+
+After initial commits, check for remaining untracked/unstaged files:
+```bash
+git status --porcelain | grep -E '^\?\?|^ M'
+```
+
+**Exclusion patterns to skip (DO NOT COMMIT):**
+
+| Category | Patterns |
+|----------|----------|
+| **Backup files** | `*.backup`, `*.bak`, `*~`, `*.orig` |
+| **Python** | `__pycache__/`, `*.pyc`, `*.pyo`, `*.pyd`, `.pytest_cache/`, `*.egg-info/`, `.tox/`, `.venv/`, `venv/` |
+| **JavaScript/TypeScript** | `node_modules/`, `.next/`, `.nuxt/`, `dist/`, `build/`, `coverage/`, `.turbo/`, `*.map`, `.cache/`, `.parcel-cache/`, `out/` |
+| **Sass/CSS** | `*.css.map`, `.sass-cache/` |
+| **C#** | `bin/`, `obj/`, `*.suo`, `*.user`, `*.userosscache`, `*.sln.docstates`, `*.csproj.user`, `packages/`, `.vs/` |
+| **System** | `.DS_Store`, `Thumbs.db`, `.update.lock`, `desktop.ini` |
+| **Build artifacts** | `*.o`, `*.so`, `*.log`, `npm-debug.log*`, `yarn-debug.log*`, `yarn-error.log*` |
+| **Editor** | `.vscode/`, `.idea/`, `*.swp`, `*.swo`, `*.swn` |
+
+**Iterative process for remaining files:**
+1. Check `git status --porcelain`
+2. Identify files NOT matching exclusion patterns
+3. If legitimate files found:
+   - Determine commit type (feat/docs/test/chore/build/deps)
+   - Group similar files together
+   - Stage: `git add [files]`
+   - Commit with appropriate message
+   - **RETURN TO STEP 1** - check for more files
+4. If NO legitimate files remain (only excluded patterns or clean):
+   - Proceed to step 6 (push if requested)
+
+**Example iteration:**
+```
+First check: Found tools/ directory → commit as feat
+Second check: Found .backup files → skip (excluded)
+Third check: Clean or only excluded files → done
+```
+
+**Safety check before push:**
+- Verify no legitimate files remain uncommitted
+- If found, warn and list them
+- Do NOT push until resolved
 
 ### 6. Push (If Requested)
 
