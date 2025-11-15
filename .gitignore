@@ -12,6 +12,7 @@
 # Session data and history
 history.jsonl
 CHECKPOINT
+.checkpoints/
 
 # Session-specific directories
 .session/
