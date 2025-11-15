@@ -1,0 +1,8 @@
+{
+  "name": "flaresolverr",
+  "title": "FlareSolverr Cloudflare Bypass",
+  "description": "Bypass Cloudflare bot protection to fetch protected web content (OpenAI docs, etc). Uses FlareSolverr Docker container.",
+  "command": ["python", "C:\\Users\\mglenn\\.claude\\tools\\flaresolverr-mcp\\server.py"],
+  "type": "stdio",
+  "env": {}
+}

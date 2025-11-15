@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    ports:
+      - "8191:8191"
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=America/New_York
+    restart: unless-stopped
+    networks:
+      - cloudflare-bypass
+
+networks:
+  cloudflare-bypass:
+    driver: bridge
