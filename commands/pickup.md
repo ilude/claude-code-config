@@ -35,12 +35,9 @@ Available sessions:
 
 Once feature-name and instance:session are determined:
 
-1. **Verify .gitignore** includes `.session/` directory
-   - If missing: Add it to prevent accidental commits
+1. **Activate session-context-management skill** (if not already active)
 
-2. **Activate session-context-management skill** (if not already active)
-
-3. **Follow skill instructions**: See "Multi-Instance Support" section in skill for complete implementation:
+2. **Follow skill instructions**: See "Multi-Instance Support" section in skill for complete implementation:
    - Read CURRENT.md **specific `## [instance:session]` section**
    - Show last 2-3 STATUS.md entries **for that instance:session tag**
    - Check LESSONS.md (shared, no filtering needed)

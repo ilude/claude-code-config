@@ -50,12 +50,9 @@ TAG="[$INSTANCE_ID:$SESSION_ID]"
 
 Once feature-name and instance IDs are determined:
 
-1. **Verify .gitignore** includes `.session/` directory
-   - If missing: Add it to prevent accidental commits
+1. **Activate session-context-management skill** (if not already active)
 
-2. **Activate session-context-management skill** (if not already active)
-
-3. **Follow skill instructions**: See "Multi-Instance Support" section in skill for complete implementation:
+2. **Follow skill instructions**: See "Multi-Instance Support" section in skill for complete implementation:
    - Create/verify directory: `.session/feature/[feature-name]/`
    - **CURRENT.md**: Update or create section with `## [$TAG] Title` header
      - If section exists: Update it

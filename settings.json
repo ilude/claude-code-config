@@ -48,10 +48,10 @@
       "Write"
     ]
   },
-  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "pwsh -NoProfile -Command \"$input | & \\\"$env:USERPROFILE\\.claude\\claude-status.ps1\\\"\""
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "model": "opus"
 }
