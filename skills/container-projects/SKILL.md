@@ -1,6 +1,6 @@
 ---
 name: container-projects
-description: Guidelines for containerized projects using Docker, Docker Compose, and container orchestration. Activate when working with Dockerfiles, docker-compose.yml, container images, Kubernetes manifests, or any container-based development and deployment workflows.
+description: Guidelines for containerized projects using Docker, Docker Compose, and container orchestration. Covers Dockerfiles, multi-stage builds, security, signal handling, entrypoint scripts, and deployment workflows.
 ---
 
 # Container-Based Projects
@@ -43,14 +43,37 @@ services:
 # ❌ NEVER use .local (conflicts with mDNS/Bonjour)
 ```
 
-## Security Checklist
+## Dockerfile Core Requirements
 
-- Run as non-root user (USER directive)
-- Use minimal Alpine-based images
-- Never hardcode secrets or commit credentials
-- Validate all input, even from trusted sources
-- Include health checks for orchestration
-- Use Docker secrets for sensitive data in production
+### Base Images
+- Use **Alpine Linux** for minimal attack surface and smaller images
+  - Example: `python:3.12-alpine`, `node:20-alpine`
+- **Specify version tags** for reproducible builds (never use `latest`)
+- Use official images from trusted registries
+- Consider distroless images for production
+- If Alpine packages unavailable, use Debian Slim-based containers
+
+### Multi-stage Builds
+- **Separate stages** for different purposes:
+  - `base` - Common dependencies and user setup
+  - `development` - Development tools and dependencies
+  - `production` - Minimal runtime with only production dependencies
+- **Copy only necessary artifacts** to final stage
+- Reduces final image size and attack surface
+- Order commands from least to most frequently changing
+
+### Security Checklist
+- ✅ Create and use non-root users
+- ✅ Set USER directive before EXPOSE and CMD
+- ✅ Never include secrets in layers
+- ✅ Use `.dockerignore` to exclude sensitive files
+- ✅ Scan images for vulnerabilities regularly
+- ✅ Keep base images updated
+- ✅ Run as non-root user (USER directive)
+- ✅ Never hardcode secrets or commit credentials
+- ✅ Validate all input, even from trusted sources
+- ✅ Include health checks for orchestration
+- ✅ Use Docker secrets for sensitive data in production
 
 ## Project Structure Recognition
 
@@ -62,18 +85,91 @@ services:
 
 **Command hierarchy:** Makefile → Project scripts → Docker commands
 
-## Base Image Selection
+## Layer Optimization
+
+### Reduce Layer Count
+- **Group RUN commands** to reduce layers
+- Use `&&` to chain related commands
+- Clean up in the same layer as installation
+
+### Example: Bad vs. Good
+```dockerfile
+# ❌ BAD: Multiple layers
+RUN apk update
+RUN apk add curl
+RUN apk add git
+RUN rm -rf /var/cache/apk/*
+
+# ✅ GOOD: Single optimized layer
+RUN apk update && \
+    apk add --no-cache \
+        curl \
+        git && \
+    rm -rf /var/cache/apk/*
+```
+
+### Alpine APK Best Practices
+- Use `apk add --no-cache` to avoid caching package index
+- Maintain **alphabetical order** in package lists for maintainability
+- Remove cache in the same RUN command if not using `--no-cache`
 
 ```dockerfile
-# ✅ CORRECT - Minimal Alpine images
-FROM alpine:latest
-FROM python:3.11-alpine
-FROM node:20-alpine
+RUN apk add --no-cache \
+        bash \
+        curl \
+        git \
+        openssh \
+        vim
+```
 
-# ❌ WRONG - Large images with more vulnerabilities
-FROM ubuntu:latest
-FROM python:3.11
-FROM node:20
+### Cache Optimization
+- **Order commands from least to most frequently changing**
+- Copy dependency files separately before copying source code
+- Use BuildKit cache mounts for package managers
+
+```dockerfile
+# ✅ GOOD: Dependency layer cached separately
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
+
+# Source code changes won't invalidate dependency cache
+COPY app/ ./app/
+```
+
+### Package Management Best Practices
+
+#### Python UV (Modern Package Manager)
+```dockerfile
+# Copy uv from official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Install dependencies with cache mount
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --no-cache -r requirements.txt
+```
+
+#### Traditional Python Pip
+```dockerfile
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
+```
+
+## Non-Root User Setup
+
+```dockerfile
+# Create non-root user
+ARG PUID=1000
+ARG PGID=1000
+ARG USER=appuser
+
+RUN addgroup -g ${PGID} ${USER} && \
+    adduser -D -u ${PUID} -G ${USER} -s /bin/sh ${USER}
+
+# Switch to non-root user before EXPOSE and CMD
+USER ${USER}
 ```
 
 ## 12-Factor App Compliance
@@ -87,25 +183,77 @@ FROM node:20
 | Disposability | Fast startup/shutdown, graceful termination |
 | Dev/Prod Parity | Keep environments similar |
 
-## Multi-Stage Build Pattern
+## Complete Multi-Stage Build Template
 
 ```dockerfile
-# Stage 1: Build
-FROM python:3.11-alpine AS builder
-WORKDIR /app
-COPY pyproject.toml uv.lock ./
-RUN pip install uv && uv sync --no-dev
+# Base stage with common setup
+FROM python:3.12-alpine AS base
 
-# Stage 2: Runtime
-FROM python:3.11-alpine
-RUN adduser -D appuser
-WORKDIR /app
-COPY --from=builder /app/.venv ./.venv
-COPY . .
-USER appuser
+# Install uv for fast dependency management
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Build arguments
+ARG PUID=1000
+ARG PGID=1000
+ARG USER=appuser
+ARG WORKDIR=/app
+
+# Create non-root user
+RUN addgroup -g ${PGID} ${USER} && \
+    adduser -D -u ${PUID} -G ${USER} -s /bin/sh ${USER}
+
+WORKDIR ${WORKDIR}
+
+# Development stage
+FROM base AS development
+
+# Install development tools
+RUN apk add --no-cache \
+        bash \
+        curl \
+        git \
+        vim
+
+# Install development dependencies
+COPY requirements.txt requirements-dev.txt ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --no-cache -r requirements-dev.txt
+
+# Copy source code
+COPY --chown=${USER}:${USER} . .
+
+USER ${USER}
+
+CMD ["python", "run.py"]
+
+# Production stage
+FROM base AS production
+
+# Install runtime system dependencies
+RUN apk add --no-cache \
+        bash \
+        curl
+
+# Install production dependencies only
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --no-cache -r requirements.txt
+
+# Copy application code
+COPY --chown=${USER}:${USER} app/ ./app/
+COPY --chown=${USER}:${USER} run.py .
+
+# Switch to non-root user
+USER ${USER}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+
+# Run application
 CMD ["python", "run.py"]
 ```
 
@@ -259,26 +407,98 @@ stop-%:
 	@docker compose stop $*
 ```
 
+## Environment Variables
+
+### Build-time Variables (ARG)
+- Use ARG for build-time configuration
+- Common ARGs: PUID, PGID, USER, WORKDIR, VERSION
+
+```dockerfile
+ARG PYTHON_VERSION=3.12
+ARG PUID=1000
+ARG PGID=1000
+ARG USER=appuser
+ARG WORKDIR=/app
+```
+
+### Runtime Variables (ENV)
+- Use ENV for runtime environment variables
+- Provide sensible defaults
+- Document required vs. optional variables
+
+```dockerfile
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    APP_ENV=production
+```
+
 ## .dockerignore Best Practices
 
+Comprehensive `.dockerignore` organized by category to exclude unnecessary files from build context:
+
 ```
-.git
-__pycache__
-*.pyc
-.pytest_cache
-.venv
-*.egg-info
-node_modules/
-.devcontainer
-.vscode
-*.log
-.env.local
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs/
 *.md
-!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Development
+.vscode/
+.idea/
+.devcontainer/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+*.egg-info/
+
+# Environment files
+.env
+.env.*
+
+# Build artifacts
+build/
+dist/
+
+# Testing
+tests/
+.spec/
+
+# Logs
+*.log
+
+# System
+.DS_Store
+.windows
+Thumbs.db
+
+# Docker files
 docker-compose*.yml
 Dockerfile*
-.coverage
-.DS_Store
+.dockerignore
+
+# Node (if applicable)
+node_modules/
+
+# Misc
+*.tmp
+.cache/
 ```
 
 ## Network Configuration
@@ -290,6 +510,127 @@ networks:
   db_network:
     driver: bridge
     internal: true  # No external access
+```
+
+## Language-Specific Patterns
+
+### Flask Application
+```dockerfile
+FROM python:3.12-alpine AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ARG USER=appuser
+RUN adduser -D -s /bin/sh ${USER}
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --no-cache -r requirements.txt
+
+COPY --chown=${USER}:${USER} app/ ./app/
+COPY --chown=${USER}:${USER} run.py .
+
+USER ${USER}
+
+EXPOSE 5000
+
+HEALTHCHECK CMD curl -f http://localhost:5000/health || exit 1
+
+CMD ["python", "run.py"]
+```
+
+### Background Worker
+```dockerfile
+FROM python:3.12-alpine AS production
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ARG USER=worker
+RUN adduser -D -s /bin/sh ${USER}
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --no-cache -r requirements.txt
+
+COPY --chown=${USER}:${USER} worker/ ./worker/
+
+USER ${USER}
+
+# No EXPOSE needed for background workers
+# No HEALTHCHECK - use orchestrator health checks
+
+CMD ["python", "-m", "worker.main"]
+```
+
+## BuildKit Features
+
+### Cache Mounts
+```dockerfile
+# Cache pip packages
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
+
+# Cache npm packages
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
+```
+
+### Multi-platform Builds
+```dockerfile
+# Support ARM and AMD architectures
+FROM --platform=$BUILDPLATFORM python:3.12-alpine
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+RUN echo "Building for $TARGETPLATFORM on $BUILDPLATFORM"
+```
+
+### Multi-platform Build Guidance
+- Use `docker buildx` for building multiple architectures
+- Reference build platform variables: `$BUILDPLATFORM`, `$TARGETPLATFORM`
+- Leverage BuildKit cache exports for CI/CD: `--cache-to=type=registry` and `--cache-from=type=registry`
+- Pin base image versions to exact patches for consistent caching
+
+## Signal Handling and Entrypoint Scripts
+
+### Production Containers
+- Use `gosu` with `exec` in production entrypoint scripts to drop privileges and forward signals
+- Ensure CMD uses direct command execution (not shell wrapping) for proper signal delivery
+- When docker.sock is mounted, fix permissions in entrypoint with: `chown ${USER}:${USER} /var/run/docker.sock >/dev/null 2>&1 || true`
+
+### Development Containers
+- Sudo is acceptable for devcontainer usage
+
+### Production Entrypoint Script with Signal Handling
+```bash
+#!/bin/bash
+set -o errexit   # abort on nonzero exitstatus
+set -o nounset   # abort on unbound variable
+set -o pipefail  # do not hide errors within pipes
+if [ -v DOCKER_ENTRYPOINT_DEBUG ] && [ "$DOCKER_ENTRYPOINT_DEBUG" == 1 ]; then
+    set -x
+    set -o xtrace
+fi
+
+# If running as root, adjust the ${USER} user's UID/GID and drop to that user
+if [ "$(id -u)" = "0" ]; then
+    groupmod -o -g ${PGID:-1000} ${USER} 2>&1 >/dev/null|| true
+    usermod -o -u ${PUID:-1000} ${USER} 2>&1 >/dev/null|| true
+
+    # Ensure docker.sock is owned by the target user when running as root
+    chown ${USER}:${USER} /var/run/docker.sock >/dev/null 2>&1 || true
+
+    echo "Running as user ${USER}: $@"
+    exec gosu ${USER} "$@"
+fi
+
+echo "Running: $@"
+exec "$@"
 ```
 
 ## Common Container Patterns

@@ -9,6 +9,7 @@
 6. **No time estimates** - They're consistently inaccurate
 7. **KISS principle** - Default to SIMPLEST solution. No features "just in case". MVP first.
 8. `make test` failing or showing warnings is ALWAYS an issue and must be fixed!
+9. **One question at a time** - Do NOT bundle questions or make assumptions. If unclear, ASK.
 
 ## Communication & Code Style
 
@@ -17,6 +18,7 @@
 - Always provide absolute paths in responses (not relative)
 - Use clear headings and structure
 - Ask for clarification when requirements are ambiguous
+- **ONE question at a time** - Do NOT bundle questions or make assumptions. If unclear, ASK.
 - Avoid excessive emojis
 
 ### Code Quality

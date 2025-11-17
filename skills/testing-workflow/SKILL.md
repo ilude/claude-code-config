@@ -1,12 +1,12 @@
 ---
 name: testing-workflow
-description: Python testing workflow patterns with pytest. Activate when working with pytest, test files (test_*.py), test directories, code quality tools, coverage reports, or testing tasks. Includes zero-warnings policy, targeted testing during development, mocking patterns, and fixture usage.
+description: Testing workflow patterns and quality standards. Activate when working with tests, test files, test directories, code quality tools, coverage reports, or testing tasks. Includes zero-warnings policy, targeted testing during development, mocking patterns, and best practices across languages.
 location: user
 ---
 
 # Testing Workflow
 
-Python testing workflow patterns and quality standards for pytest.
+Testing workflow patterns and quality standards for various frameworks and languages.
 
 ## CRITICAL: Zero Warnings Tolerance
 
@@ -31,63 +31,109 @@ Python testing workflow patterns and quality standards for pytest.
 - ❌ Linting errors
 - ❌ Unformatted code
 
-```bash
-# ✅ Required outcome
-uv run pytest
-# All tests passed, no warnings
-
-# ❌ Unacceptable
-uv run pytest
-# Tests passed but with warnings
-```
-
 ## Testing Strategy
 
+### Test Pyramid
+1. **Unit Tests (70%)** - Fast, isolated, test individual functions/classes
+2. **Integration Tests (20%)** - Test component interactions
+3. **End-to-End Tests (10%)** - Full system tests
+
+### What to Test
+✅ **DO test:**
+- Public APIs and interfaces
+- Business logic and calculations
+- Edge cases (empty inputs, None values, boundaries)
+- Error handling and exceptions
+- Data validation
+- Critical paths through the application
+
+❌ **DON'T test:**
+- Private implementation details
+- Third-party library internals
+- Trivial getters/setters
+- Framework magic (unless you suspect bugs)
+
+### Development Workflow
 **During Development:**
 - Run targeted tests for fast iteration
 - Fix issues immediately
 
 **Before Commit:**
-- Run full suite (`make check`)
+- Run full suite
 - Fix all warnings/errors
-- Note: May run 1500+ tests
+- May run 1500+ tests
 
 ## Test Organization
 
+### Directory Structure
 ```
-project/
-├── tests/
-│   ├── unit/              # Fast, isolated
-│   ├── integration/       # External dependencies
-│   └── fixtures/conftest.py
+tests/
+├── __init__.py / conftest.py  # Shared fixtures and setup
+├── unit/                      # Fast, isolated tests
+│   └── test_*.py
+├── integration/               # Component interaction tests
+│   └── test_*.py
+└── e2e/                       # End-to-end tests
+    └── test_*.py
 ```
 
-**Naming:**
-- Files: `test_*.py` or `*_test.py`
-- Functions: `test_*`
-- Classes: `Test*`
+### Naming Conventions
+- Test files: `test_*.py` or `*_test.py`
+- Test classes: `Test*` (e.g., `TestUserService`)
+- Test functions: `test_*` (e.g., `test_create_user_success`)
+- Fixtures: Descriptive names (e.g., `user_service`, `mock_database`)
+
+**CRITICAL:** Never name non-test classes with "Test" prefix - framework will try to collect them as tests.
 
 ## Coverage Requirements
 
-**Standards:** >80% coverage, focus on behavior
+### Coverage Goals
+- **Minimum:** 80% overall coverage
+- **Critical paths:** 100% coverage
+- **New code:** Should not decrease overall coverage
+- **Focus:** Behavior over line count
 
+### What to Cover
 **Test these:**
 - Business logic, algorithms
 - Edge cases, boundary conditions
-- Error handling
+- Error handling and exceptions
 - Integration points, APIs
+- Data validation
 - Security-critical paths
 
 **Skip these:**
 - Trivial getters/setters
 - Private implementation details
-- Third-party internals
+- Third-party library internals
 - Simple data classes
+- Framework magic (unless suspected bug)
 
-## Test Structure - AAA Pattern
+### Edge Cases to Test
+- Empty inputs (empty strings, empty collections)
+- None/null values
+- Boundary values (zero, maximum, minimum)
+- Single item cases
+- Negative numbers
+- Large numbers
+- Mixed positive and negative values
 
+## Test Structure - Arrange-Act-Assert Pattern
+
+All tests follow the **Arrange-Act-Assert (AAA)** pattern for clarity:
+
+1. **Arrange** - Set up test data and conditions
+2. **Act** - Execute the functionality being tested
+3. **Assert** - Verify the results
+
+This structure makes tests:
+- Easy to understand at a glance
+- Simple to maintain
+- Consistent across the codebase
+
+### Python Example
 ```python
-# ✅ GOOD
+# ✅ GOOD - Clear AAA structure
 def test_user_registration():
     # Arrange
     user_data = {"email": "test@example.com", "password": "secure"}
@@ -97,7 +143,7 @@ def test_user_registration():
     assert result.success
     assert result.user.email == "test@example.com"
 
-# ❌ BAD - Testing implementation
+# ❌ BAD - Testing implementation details
 def test_internal_method():
     obj = MyClass()
     assert obj._internal_state == expected  # Don't test private state
@@ -162,20 +208,82 @@ def test_get_user():
     assert service.get_user(1)["name"] == "Test"
 ```
 
+## Testing Exception Handling
+
+Tests should verify that exceptions are raised with correct messages for invalid inputs:
+
+```python
+# ✅ GOOD - Testing exception
+def test_create_user_invalid_email(user_service):
+    """Test user creation fails with invalid email."""
+    user_data = {
+        "username": "testuser",
+        "email": "invalid-email",  # Invalid format
+        "age": 25
+    }
+    # Expect exception when invalid email is provided
+    with pytest.raises(ValidationError) as exc_info:
+        user_service.create_user(user_data)
+
+    assert "email" in str(exc_info.value)
+```
+
+## Mocking External Dependencies
+
+Tests should mock external dependencies to:
+- Isolate the code being tested
+- Avoid real external calls (APIs, databases, network)
+- Control behavior for edge cases
+- Speed up test execution
+
+```python
+from unittest.mock import Mock, patch
+
+# Mock external service
+@patch('module.requests.get')
+def test_api_call(mock_get):
+    mock_get.return_value.json.return_value = {"status": "ok"}
+    result = fetch_data()
+    # Verify mock was called and behavior is correct
+    mock_get.assert_called_once()
+    assert result["status"] == "ok"
+
+# Dependency injection for testability
+class UserService:
+    def __init__(self, db_connection):
+        self.db = db_connection
+
+def test_get_user():
+    mock_db = Mock()
+    mock_db.query.return_value = {"id": 1, "name": "Test"}
+    service = UserService(mock_db)
+    assert service.get_user(1)["name"] == "Test"
+```
+
 ## Integration Testing
+
+Integration tests verify that multiple components work together correctly. They typically:
+- Use real or test databases/services
+- Test API endpoints with real infrastructure
+- Verify component interactions
+- Run slower than unit tests
 
 ```python
 @pytest.fixture(scope="module")
 def test_database():
+    """Provide test database for integration tests."""
     db = create_test_database()
     run_migrations(db)
     yield db
-    drop_test_database(db)
+    cleanup_database(db)
 
 def test_user_operations(test_database):
+    """Test user repository with real database."""
     user = create_user(test_database, email="test@example.com")
     assert user.id is not None
-    assert get_user(test_database, user.id).email == "test@example.com"
+
+    retrieved = get_user(test_database, user.id)
+    assert retrieved.email == "test@example.com"
 ```
 
 ## TDD Pattern Example
@@ -214,7 +322,16 @@ markers = [
 ]
 ```
 
-## Performance Testing
+## Test Markers and Categorization
+
+Tests can be categorized with markers to allow selective execution:
+
+**Common marker categories:**
+- `slow` - Tests that take longer to run (deselect with `-m "not slow"`)
+- `integration` - Integration tests that use external services
+- `unit` - Unit tests (fast, isolated)
+- `e2e` - End-to-end tests
+- `performance` - Performance/benchmark tests
 
 ```python
 @pytest.mark.slow
@@ -222,8 +339,35 @@ def test_expensive_operation():
     result = process_large_dataset()
     assert result.success
 
-# Run fast tests only
+@pytest.mark.integration
+def test_database_integration():
+    result = query_database()
+    assert result is not None
+
+# Run only fast tests
 pytest -m "not slow"
+
+# Run only integration tests
+pytest -m integration
+```
+
+## Performance Testing
+
+Performance tests verify that operations complete within acceptable time limits:
+
+```python
+import time
+
+def test_performance_within_limit(data_processor):
+    """Test processing completes within time limit."""
+    large_dataset = generate_test_data(10000)
+
+    start = time.time()
+    result = data_processor.process(large_dataset)
+    duration = time.time() - start
+
+    assert duration < 1.0  # Should complete in under 1 second
+    assert len(result) == 10000
 ```
 
 ## Development Workflow
@@ -284,4 +428,4 @@ uv run mypy app/ tests/                     # Type check
 
 ---
 
-**TL;DR: Zero warnings policy. Targeted tests during development. Full suite before commit. Mock external dependencies. Test behavior not implementation. >80% coverage on critical paths.**
+**TL;DR: Zero warnings policy. Follow test pyramid. Arrange-Act-Assert pattern. Mock external dependencies. Test behavior not implementation. >80% coverage on critical paths. Run targeted tests during development, full suite before commit.**
