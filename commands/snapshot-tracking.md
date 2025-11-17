@@ -4,7 +4,7 @@ argument-hint: enable|disable
 model: haiku
 ---
 
-# Commit Session Command
+# Snapshot Tracking Command
 
 Manage session context commit configuration for the current project.
 
@@ -38,7 +38,7 @@ grep -q enable-session-commits .claude/CLAUDE.md 2>/dev/null&&M=1||M=0;grep -q "
   Session Commits: INCONSISTENT
     [show actual states based on M and G values]
 
-  Run '/commit-session enable' or '/commit-session disable' to fix.
+  Run '/snapshot-tracking enable' or '/snapshot-tracking disable' to fix.
   ```
 
 ---
@@ -97,7 +97,7 @@ mkdir -p .claude;grep -v -e enable-session-commits -e "^## Session Context Manag
 ```
 Error: Invalid argument '[arg]'
 
-Usage: /commit-session [enable|disable]
+Usage: /snapshot-tracking [enable|disable]
   No argument: Show current status
   enable:      Enable session commits for this project
   disable:     Disable session commits (default behavior)
