@@ -38,15 +38,43 @@ Once feature-name and instance:session are determined:
 1. **Activate session-context-management skill** (if not already active)
 
 2. **Follow skill instructions**: See "Multi-Instance Support" section in skill for complete implementation:
-   - Read CURRENT.md **specific `## [instance:session]` section**
+   - Read CURRENT.md:
+     - **Feature Overview section** (shared, at top of file)
+     - **Specific `## [instance:session]` section** for selected instance
    - Show last 2-3 STATUS.md entries **for that instance:session tag**
    - Check LESSONS.md (shared, no filtering needed)
-   - Display resume format:
+   - Display resume format with Feature Overview first:
      ```
-     Resuming [feature-name] from [instance:session]: [Right Now content]
-     Last done: [Last item from Done list]
-     Next: [Next 3 #1]
+     Resuming [feature-name] from [instance:session]
+
+     ## Feature Overview
+     **Goal**: [Feature goal from overview]
+
+     **Key Requirements**: [Bullet summary]
+
+     **Design Decisions**: [Bullet summary if any]
+
+     ---
+
+     **Right Now**: [Right Now content from instance section]
+
+     **Last Done**: [Last item from Done list]
+
+     **Recent Work** (from STATUS.md):
+     - [Timestamp] [Summary with user request and outcomes]
+     - [Timestamp] [Summary with user request and outcomes]
+
+     **Next**: [Next 3 #1]
+
+     [If blockers exist:]
+     ⚠️ **Blockers**: [Blockers from instance section]
      ```
    - Begin with "Next 3 #1" action from that instance's context
 
 **All multi-instance parsing details are in the session-context-management skill.**
+
+**Feature Overview Display**:
+- Shows 50,000-foot context before diving into specific tasks
+- Helps re-orient to what this feature is about and why it matters
+- Particularly helpful when resuming after days/weeks away
+- If Feature Overview section missing (backward compatibility), skip it and proceed with instance section

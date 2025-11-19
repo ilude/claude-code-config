@@ -111,14 +111,16 @@ Before writing to CURRENT.md, STATUS.md, or LESSONS.md, scan content for sensiti
 ```
 project-root/
 └── .session/feature/[feature-name]/
-    ├── CURRENT.md    # 🚀 READ FIRST - Quick resume (~100 lines max)
-    ├── STATUS.md     # 📋 Terse log - Chronological entries
+    ├── CURRENT.md    # 🚀 READ FIRST - Quick resume (~150 lines max, includes Feature Overview)
+    ├── STATUS.md     # 📋 Terse log - Chronological entries with discussion capture
     └── LESSONS.md    # 💡 Bullet points - What worked/didn't
 ```
 
 **Why `.session/`**: Usually gitignored (working memory, not documentation), UNLESS project has `enable-session-commits: true`
 
 **Why `feature/[feature-name]/`**: Separate contexts for different work streams
+
+**CURRENT.md structure**: Feature Overview (slower-changing 50,000-foot view) + session work state (faster-changing tasks/progress)
 
 ---
 
@@ -144,9 +146,23 @@ SESSION_ID=$(ls -lt ~/.claude/debug/*.txt 2>/dev/null | head -1 | awk '{print $9
 
 ### File Format with Multiple Instances
 
-**CURRENT.md** (separate sections per instance):
+**CURRENT.md** (shared Feature Overview + separate sections per instance):
 ```markdown
-# Quick Resume
+# [Feature Name] - Current State
+
+## Feature Overview
+**Goal**: High-level description of what this feature accomplishes and why it's needed
+
+**Key Requirements**:
+- Critical constraints or dependencies
+
+**User Stories**:
+- Specific use cases or scenarios
+
+**Design Decisions**:
+- Architectural choices made and their rationale
+
+---
 
 ## [5d72a497:888cf413] Frontend Queue
 Last: 2025-11-13 23:30
@@ -171,21 +187,28 @@ Adding timestamp support to archive format
 ...
 ```
 
-**STATUS.md** (tagged entries):
+**STATUS.md** (tagged entries with discussion capture):
 ```markdown
 # Status Log
 
 ---
 
 ## [5d72a497:888cf413] 2025-11-13 23:30 - Queue system
+**User Request**: Enable submitting multiple questions without blocking
+**Discussion**: Chose client-side queue over server queue for simpler implementation
+**Outcomes**:
 ✅ Frontend can queue multiple questions
-Next: Test concurrent requests
+❌ No concurrent request handling yet
+**Next**: Test concurrent requests
 
 ---
 
 ## [a08428d4:3e5380bd] 2025-11-13 23:28 - Transcript timestamps
+**User Request**: Add timing information to transcripts
+**Discussion**: Archive format needs extension for metadata
+**Outcomes**:
 ❌ Timestamps not in archive format
-Next: Add timing metadata
+**Next**: Add timing metadata
 ```
 
 **LESSONS.md** (shared, no tags):
@@ -216,43 +239,63 @@ When writing file paths in session files, ALWAYS use relative paths from the fea
 - Example: `.session/feature/mentat/` should use `api/main.py` not `projects/mentat/api/main.py`
 ---
 
-### CURRENT.md - Quick Resume
-**Purpose**: Resume work in < 2 minutes | **Max Size**: ~100 lines | **Update**: After milestones (~1-2 hours work)
+### CURRENT.md - Quick Resume with Feature Overview
+**Purpose**: Resume work in < 2 minutes | **Max Size**: ~150 lines | **Update**: After milestones (~1-2 hours work)
+
+**Structure**: Feature Overview (slower-changing) at top, session work state (faster-changing) below
 
 ```markdown
-# Quick Resume
+# [Feature Name] - Current State
 
+## Feature Overview
+**Goal**: [What this feature accomplishes and why it's needed - 50,000-foot view]
+
+**Key Requirements**:
+- [Critical constraints, dependencies, or technical requirements]
+- [Another key requirement]
+
+**User Stories**:
+- [Specific use case or user scenario]
+- [Another user story]
+
+**Design Decisions**:
+- [Architectural choice made]: [Rationale]
+- [Another design decision]: [Why this approach]
+
+---
+
+## [instance-id:session-id] [Session Title]
 Last: YYYY-MM-DD HH:MM
 
-## Right Now
+### Right Now
 [One sentence describing what you're doing RIGHT NOW]
 
-## Last 5 Done
+### Last 5 Done
 1. ✅ [Most recent completed task]
 2. ✅ [Previous completed task]
 3. ✅ [Earlier completed task]
 4. ✅ [Earlier completed task]
 5. ✅ [Earliest completed task]
 
-## In Progress
+### In Progress
 [If TodoWrite active: Copy active todos here]
 [If no TodoWrite: List what's being worked on from context]
 - [Active item 1]
 - [Active item 2]
 
-## Paused
+### Paused
 [Leave empty UNLESS you context-switched to different feature]
 [If paused items exist: "- [Feature name] - [Why paused]"]
 
-## Tests
+### Tests
 [If tests were run, show results. If not run yet, write "Not run yet"]
 **[Framework name]**: X pass / Y fail
 - ❌ [failing-test-name] - [why it's failing]
 
-## Blockers
+### Blockers
 [List specific blockers OR write "None"]
 
-## Next 3
+### Next 3
 1. [The immediate next action - be specific]
 2. [Then do this]
 3. [After that]
@@ -261,8 +304,16 @@ Last: YYYY-MM-DD HH:MM
 Details → STATUS.md
 ```
 
-### STATUS.md - Terse Log
-**Purpose**: Chronological breadcrumbs | **Size**: No limit, but keep entries SHORT | **Update**: After meaningful steps
+**Feature Overview Guidelines**:
+- **Slower-changing**: Only update when feature scope/understanding evolves
+- **50,000-foot view**: High-level context, not implementation details
+- **Concise**: Each section should be bullets or short sentences
+- **Backward compatible**: Existing sessions without overview still work
+- **Created on first snapshot**: Inferred from conversation or prompted from user
+- **Shared across instances**: All instances working on same feature see same overview
+
+### STATUS.md - Terse Log with Discussion Capture
+**Purpose**: Chronological breadcrumbs with context | **Size**: No limit, but keep entries SHORT | **Update**: After meaningful steps
 
 ```markdown
 # Status Log
@@ -271,22 +322,38 @@ Details → STATUS.md
 
 ---
 
-## YYYY-MM-DD HH:MM - [What we did]
+## [instance:session] YYYY-MM-DD HH:MM - [What we did]
+**User Request**: [Summarized intent of user's request]
+**Discussion**: [Key decisions, alternatives considered, trade-offs - omit if obvious]
+**Outcomes**:
 ✅/❌ [Outcome]
-Next: [Action]
-[Why/Blocker only if non-obvious]
+**Next**: [Action]
 
 ---
 
 [Keep entries SHORT - this is breadcrumbs, not a diary]
+[Discussion field captures "why" for important decisions]
 ```
 
-**Good example:**
+**Good example with discussion:**
 ```
-## 2025-01-12 14:35 - Login page
+## [5d72:888c] 2025-01-12 14:35 - Login page
+**User Request**: Add certificate and credential authentication
+**Discussion**: Chose dual auth over single method for flexibility
+**Outcomes**:
 ✅ Cert & cred auth working
 ❌ Cookies broken in tests
-Next: Fix playwright config
+**Next**: Fix playwright config
+```
+
+**Good example without discussion (routine work):**
+```
+## [5d72:888c] 2025-01-12 15:10 - Fix tests
+**User Request**: Fix broken cookie tests
+**Outcomes**:
+✅ Playwright config updated
+✅ All tests passing
+**Next**: Deploy to staging
 ```
 
 ### LESSONS.md - Bullet Points
