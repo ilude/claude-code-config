@@ -19,8 +19,9 @@ else {
 }
 
 # Find git repository root by searching up the directory tree
-$currentPath = Get-Location
-$searchPath = $currentPath.Path
+# Use the current_dir from Claude Code's JSON input, not PowerShell's location
+$currentPath = if ($cwd) { $cwd } else { (Get-Location).Path }
+$searchPath = $currentPath
 $gitRepoPath = $null
 
 while ($searchPath) {
@@ -40,9 +41,18 @@ while ($searchPath) {
 $homePath = $env:USERPROFILE
 
 if ($gitRepoPath) {
-    # Display basename of directory containing .git
-    $basename = Split-Path $gitRepoPath -Leaf
-    
+    # Check if this is a worktree (. git is a file, not a directory)
+    $gitPath = Join-Path $gitRepoPath ".git"
+    $isWorktree = Test-Path $gitPath -PathType Leaf
+
+    if ($isWorktree) {
+        # In a worktree - use the current directory name (worktree name)
+        $basename = Split-Path $currentPath -Leaf
+    } else {
+        # In main repo - use the repo directory name
+        $basename = Split-Path $gitRepoPath -Leaf
+    }
+
     # Check if git repo is in home directory and preface with ~/
     if ($gitRepoPath.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
         $dir = "~/$basename"
@@ -51,22 +61,23 @@ if ($gitRepoPath) {
     }
 } else {
     # No git repo found, use current directory with ~/ prefix if in home directory
-    if ($currentPath.Path.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
-        $relativePath = $currentPath.Path.Substring($homePath.Length)
+    if ($currentPath.StartsWith($homePath, [StringComparison]::OrdinalIgnoreCase)) {
+        $relativePath = $currentPath.Substring($homePath.Length)
         if ($relativePath) {
             $dir = "~" + $relativePath.Replace('\', '/')
         } else {
             $dir = "~"
         }
     } else {
-        $dir = $currentPath.Path.Replace('\', '/')
+        $dir = $currentPath.Replace('\', '/')
     }
 }
 
 $branch = ""
 
 try {
-    $branchName = git branch --show-current 2>$null
+    # Run git from the current directory (from JSON, not PowerShell's location)
+    $branchName = git -C $currentPath branch --show-current 2>$null
     if ($branchName) {
         # ANSI color codes: Yellow for brackets, Blue for branch name
         $branch = "`e[33m[`e[34m${branchName}`e[33m]`e[0m"
