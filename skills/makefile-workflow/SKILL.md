@@ -561,6 +561,41 @@ test: ## Run tests
 	@echo "$(COLOR_SUCCESS)Tests passed!$(COLOR_RESET)"
 ```
 
+### Output Discipline
+
+**One line in, one line out.** Most targets need at most two echo statements:
+
+```makefile
+# ❌ Play-by-play narration
+start:
+	@echo "Starting platform services..."
+	$(COMPOSE_CMD) up -d
+	@echo "Starting frontend..."
+	@cd frontend && bun run dev &
+	@echo ""
+	@echo "Platform running:"
+	@echo "  Frontend: https://example.com"
+	@echo "  API:      https://api.example.com"
+	@echo ""
+	@echo "Done!"
+
+# ✅ One in, one out
+start:
+	@echo "Starting at https://example.com ..."
+	$(COMPOSE_CMD) up -d
+	@cd frontend && bun run dev > ../logs/frontend.log 2>&1 &
+	@echo "Logs: tail -f logs/frontend.log"
+```
+
+**Opening echo:** What's happening + key URL/info (optional - skip if obvious)
+**Closing echo:** Actionable next step (where logs are, what command to run next)
+
+**Skip echoes entirely for:**
+- Simple commands where output is self-evident (`test`, `lint`, `format`)
+- Intermediate steps ("Starting X...", "Now doing Y...")
+- Blank lines for formatting
+- Info already in the `## comment`
+
 ---
 
 ## Error Handling
@@ -877,3 +912,4 @@ show-docs: ## Open documentation in browser
 5. **Complex logic in recipes**: Move shell scripts to separate files for maintainability
 6. **Mixing recursive and immediate**: Use `:=` for clarity unless you need late binding
 7. **Not exporting variables**: Subprocesses won't see Make variables unless exported
+8. **Echo spam**: Avoid play-by-play ("Starting...", "Now doing...", "Done!"). One line in, one line out.
