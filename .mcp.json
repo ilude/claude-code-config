@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "flaresolverr": {
+      "command": "python",
+      "args": ["${USERPROFILE}/.claude/tools/flaresolverr-mcp/server.py"]
+    },
+    "browsermcp": {
+      "command": "npx",
+      "args": ["@browsermcp/mcp@latest"]
+    }
+  }
+}
