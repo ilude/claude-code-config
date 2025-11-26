@@ -16,6 +16,7 @@ CHECKPOINT
 
 # Session-specific directories
 .session/
+plans/
 file-history/
 projects/
 todos/
