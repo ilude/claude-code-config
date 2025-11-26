@@ -11,9 +11,6 @@ Comprehensive git workflow principles for all git operations.
 
 ## Critical Rules
 
-### Commit Messages
-**NEVER add Claude Code attribution footer to commits.** Commit messages must be clean with NO attribution footer, NO "Generated with Claude Code", and NO "Co-Authored-By: Claude" text.
-
 ### Push Behavior
 **NEVER push without explicit "push" keyword.** Examples: "commit my changes" → NO push, "commit and push" → YES push. After committing without push, inform: "Changes committed locally. Run 'git push' to push to remote."
 
@@ -93,8 +90,6 @@ EOF
 
 Focus on "why" rather than "what". Keep summary to 1-2 sentences.
 
-**IMPORTANT:** Clean commit messages only - NO attribution footer, NO "Generated with Claude Code", NO "Co-Authored-By" text.
-
 ### Human-Like Commit Style
 
 To avoid obvious AI patterns (while keeping good documentation):
@@ -128,7 +123,6 @@ When writing code in commits, avoid AI patterns:
 - Only amend your own commits
 - Check authorship before amending
 - If pre-commit hooks modify files, only amend if safe
-- **CRITICAL:** NO AI attribution in commits, comments, or code! - NO "Generated with", "Co-Authored-By: Claude", or AI attribution text!
 
 ## Philosophy
 

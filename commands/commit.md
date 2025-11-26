@@ -30,10 +30,9 @@ For each group of related files:
 1. Stage the files with git add
 2. Write a commit message that is human-style with natural grammar
 3. NO emojis in commit messages
-4. NO AI attribution text - do not include "Generated with", "Co-Authored-By: Claude", or any AI attribution
-5. Brief summary line with optional detailed body
-6. Use HEREDOC format for multi-line messages: git commit -m "$(cat <<'EOF'\ntype: summary\n\nOptional details\nEOF\n)"
-7. Create the commit
+4. Brief summary line with optional detailed body
+5. Use HEREDOC format for multi-line messages: git commit -m "$(cat <<'EOF'\ntype: summary\n\nOptional details\nEOF\n)"
+6. Create the commit
 
 After each commit, run git status again. If legitimate files remain (not matching the auto-ignore patterns), categorize and group them, then commit. Repeat this loop until git status shows only ignored files or working tree is clean.
 
