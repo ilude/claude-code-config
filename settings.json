@@ -1,4 +1,5 @@
 {
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(bash:*)",
@@ -48,10 +49,21 @@
       "Write"
     ]
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/ensure-mcp-config.sh\""
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "pwsh -NoProfile -Command \"$input | & \\\"$env:USERPROFILE\\.claude\\claude-status.ps1\\\"\""
   },
-  "alwaysThinkingEnabled": true,
-  "includeCoAuthoredBy": false
+  "alwaysThinkingEnabled": false
 }
