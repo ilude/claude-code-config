@@ -1,11 +1,11 @@
 ---
 name: git-workflow
-description: Git workflow and commit guidelines. MUST be activated before ANY git commit, push, or version control operation. Includes security scanning for secrets (API keys, tokens, .env files), commit message formatting with HEREDOC, logical commit grouping (docs, test, feat, fix, refactor, chore, build, deps), push behavior rules, and safety rules for hooks and force pushes. Activate when user requests committing changes, pushing code, creating commits, or performing any git operations including analyzing uncommitted changes.
+description: Git workflow and commit guidelines. MUST be activated before ANY git commit, push, or version control operation. Includes security scanning for secrets (API keys, tokens, .env files), commit message formatting with HEREDOC, logical commit grouping (docs, test, feat, fix, refactor, chore, build, deps), push behavior rules, safety rules for hooks and force pushes, and CRITICAL safeguards for destructive operations (filter-branch, gc --prune, reset --hard). Activate when user requests committing changes, pushing code, creating commits, rewriting history, or performing any git operations including analyzing uncommitted changes.
 ---
 
 # Git Workflow Guidelines
 
-**Auto-activate when:** Working with `.gitignore`, `.gitattributes`, `.git/`, or when user mentions commit, push, git, version control, pull request, branch, merge, or staging changes. Should also activate when bash commands contain `git` (requires conversation parsing).
+**Auto-activate when:** Working with `.gitignore`, `.gitattributes`, `.git/`, or when user mentions commit, push, git, version control, pull request, branch, merge, staging changes, filter-branch, rebase, reset, or history rewrite. Should also activate when bash commands contain `git` (requires conversation parsing).
 
 Comprehensive git workflow principles for all git operations.
 
@@ -22,16 +22,21 @@ Only commit when explicitly requested. Never commit proactively.
 **Always scan for secrets. If found, STOP and refuse to commit.**
 
 Critical patterns:
-- API keys (API_KEY=, sk-ant-, sk-proj-)
-- Tokens (TOKEN=, Bearer)
-- Passwords (PASSWORD=, pwd=)
-- Private keys (-----BEGIN)
-- Hardcoded credentials
+- AWS keys (`AKIA`, `ABIA`, `ACCA`, `ASIA` prefixes)
+- GitHub tokens (`ghp_`, `gho_`, `ghu_`, `ghs_`, `ghr_`)
+- Anthropic keys (`sk-ant-`)
+- OpenAI keys (`sk-proj-`, `sk-`)
+- Generic API keys (`API_KEY=`, `APIKEY=`, `api_key=`)
+- Tokens (`TOKEN=`, `ACCESS_TOKEN=`, `Bearer `)
+- Passwords (`PASSWORD=`, `pwd=`, `passwd=`, `secret=`)
+- Private keys (`-----BEGIN`, `-----BEGIN RSA`, `-----BEGIN OPENSSH`)
+- Connection strings (`mongodb://`, `postgres://`, `mysql://`)
+- High-entropy strings (32+ char random alphanumeric)
 
 If detected:
 1. Show files/lines
 2. Suggest .gitignore
-3. Recommend env vars
+3. Recommend env vars or secret manager
 4. Refuse even if insisted
 
 ### Git-Crypt Exception
@@ -59,17 +64,32 @@ secrets/*.json filter=git-crypt diff=git-crypt
 
 ## Commit Organization
 
-### Types
+### Types (Conventional Commits)
 | Type | Purpose | Examples |
 |------|---------|----------|
-| docs | Documentation | README, *.md |
-| test | Tests | test_*.py, *.spec.* |
 | feat | New features | New functionality |
 | fix | Bug fixes | Corrections |
+| docs | Documentation | README, *.md |
+| test | Tests | test_*.py, *.spec.* |
 | refactor | Code improvements | No behavior change |
-| chore | Configuration | .gitignore, configs |
-| build | Build/CI | Dockerfile, .github/ |
+| perf | Performance | Optimization |
+| style | Formatting | Whitespace, semicolons |
+| chore | Maintenance | .gitignore, configs |
+| build | Build system | Dockerfile, Makefile |
+| ci | CI/CD | .github/workflows |
 | deps | Dependencies | lock/requirements |
+| revert | Reverts | Undo previous commit |
+
+### Breaking Changes
+Use `!` after type: `feat!: remove deprecated API`
+Or add footer: `BREAKING CHANGE: description`
+
+### Atomic Commits
+Each commit should:
+- Do ONE thing only
+- Leave codebase in working state
+- Be independently revertable
+- Use `git add -p` to stage partial files
 
 ### Grouping Strategy
 - Single commit: All changes closely related
@@ -123,6 +143,47 @@ When writing code in commits, avoid AI patterns:
 - Only amend your own commits
 - Check authorship before amending
 - If pre-commit hooks modify files, only amend if safe
+
+## Destructive Operations - BANNED
+
+### NEVER Use These Commands
+- `git filter-branch` - BANNED (deprecated by git project, use git-filter-repo)
+- `git gc --prune=now` - BANNED (bypasses 14-day safety window)
+- `git gc --aggressive` - BANNED (makes recovery harder)
+- `git reset --hard` - BANNED without explicit user request
+- `git clean -fd` - BANNED without explicit user request
+- `git add -f` on gitignored files - BANNED (causes data loss later)
+
+### If User Asks to Remove Files from Git History
+1. STOP - Do not use filter-branch (it is deprecated)
+2. Tell user: "git-filter-repo is the recommended tool. It requires a fresh clone."
+3. Ask: "Do you have backups? Assume any secrets are already compromised."
+4. Suggest: Rotate credentials first, then rewrite history
+5. If proceeding: User must install git-filter-repo and work on fresh clone
+6. NEVER run `gc --prune` after - default 14-day window allows recovery
+
+### If File is in .gitignore But Needs Committing
+1. STOP - Do not use `git add -f`
+2. Better: Add exception to .gitignore using `!` prefix
+   ```
+   # In .gitignore:
+   *.log
+   !important.log  # Exception - this file WILL be tracked
+   ```
+3. Or: Remove file pattern from .gitignore entirely
+4. Then: `git add <file>` normally
+
+### Undo Accidental Force-Add
+```bash
+git rm --cached <file>  # Removes from git, keeps on disk
+```
+
+### Recovery Options (before gc --prune=now)
+```bash
+git reflog                    # Find lost commits
+git fsck --unreachable        # Find orphaned objects
+git fsck --lost-found         # Recover to .git/lost-found/
+```
 
 ## Philosophy
 
