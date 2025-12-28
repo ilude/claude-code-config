@@ -55,6 +55,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/sync-claude-config.sh\""
+          },
+          {
+            "type": "command",
             "command": "bash \"$HOME/.claude/hooks/ensure-mcp-config.sh\""
           }
         ]
