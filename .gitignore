@@ -55,5 +55,6 @@ venv/
 # Temporary output directory
 tmp/
 
-# Generated marketplace content
+# Plugins and cache
 plugins/
+stats-cache.json
