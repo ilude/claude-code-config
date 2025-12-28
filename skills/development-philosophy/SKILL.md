@@ -11,10 +11,11 @@ description: Personal development philosophy emphasizing experiment-driven, fail
 
 **Execute immediately. Solve real problems. Start simple, iterate based on evidence.**
 
-**Three pillars:**
+**Four pillars:**
 1. **Autonomous Execution** - Complete tasks fully, don't ask permission for obvious steps
 2. **Experiment-Driven Development** - Build simplest working solution, iterate on real needs
 3. **Fail-Fast Learning** - Short cycles, expect to pivot, document learnings
+4. **Least Astonishment** - Changes should be predictable; match existing patterns (see `~/.claude/skills/least-astonishment/`)
 
 ---
 

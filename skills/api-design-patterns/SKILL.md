@@ -13,6 +13,7 @@ Language-agnostic patterns for designing robust, scalable REST and GraphQL APIs.
 
 - **Simple over clever** - Choose straightforward patterns that solve the problem
 - **Consistency** - Apply patterns consistently across endpoints
+- **Least Astonishment** - APIs should do what their names suggest, nothing more (see `~/.claude/skills/least-astonishment/`)
 - **Pragmatism** - Pick approaches based on actual use cases, not theoretical purity
 - **No over-engineering** - Don't add features or complexity "just in case"
 

@@ -8,6 +8,7 @@
  - **No backup files** - Git handles version control
  - **NEVER give time estimates** - No "2-3 hours", "a few days", "~1 week", etc. Just describe steps, not durations.
  - **KISS principle** - Default to SIMPLEST solution. No features "just in case". MVP first.
+ - **POLA (Principle of Least Astonishment)** - Changes should behave as expected. Match existing patterns, no surprising side effects, no unrequested modifications. See `~/.claude/skills/least-astonishment/`.
  - `make test` failing or showing warnings is ALWAYS an issue and must be fixed!
  - **Ask, don't assume** - Never guess or fill in blanks. Ask clarifying questions.
  - **One question at a time** - Use AskUserQuestion tool with multiSelect: true when possible.
