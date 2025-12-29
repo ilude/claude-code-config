@@ -1,0 +1,154 @@
+# Copilot Instructions
+
+<!--
+This file provides context to GitHub Copilot for this workspace.
+Place at: .github/copilot-instructions.md
+-->
+
+## Project Overview
+
+[PROJECT_NAME] is a [BRIEF_DESCRIPTION].
+
+## Tech Stack
+
+- **Language**: [PRIMARY_LANGUAGE]
+- **Framework**: [FRAMEWORK_NAME]
+- **Database**: [DATABASE_TYPE]
+- **Testing**: [TEST_FRAMEWORK]
+- **Package Manager**: [PACKAGE_MANAGER]
+
+## Architecture
+
+[DESCRIBE_HIGH_LEVEL_ARCHITECTURE]
+
+### Project Structure
+
+```
+src/
+  api/         # API endpoints and controllers
+  services/    # Business logic
+  models/      # Data models and schemas
+  utils/       # Shared utilities
+tests/         # Test files
+docs/          # Documentation
+```
+
+## Coding Standards
+
+### General
+
+- Use descriptive variable and function names
+- Keep functions small and focused
+- Write self-documenting code with clear intent
+- Add comments only for complex logic or non-obvious decisions
+
+### Naming Conventions
+
+- Variables: `camelCase`
+- Functions: `camelCase`
+- Classes: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Files: `kebab-case`
+
+### Code Style
+
+- Use [PREFERRED_FORMATTING_TOOL] for formatting
+- Maximum line length: [NUMBER] characters
+- Use [TABS_OR_SPACES] for indentation
+- Always use explicit types (no implicit any)
+
+## Patterns and Practices
+
+### Preferred Patterns
+
+- Repository pattern for data access
+- Service layer for business logic
+- DTOs for API request/response objects
+- Dependency injection for testability
+
+### Error Handling
+
+- Use custom error classes
+- Always include error context
+- Log errors with appropriate severity
+- Return user-friendly error messages
+
+### Async Code
+
+- Prefer async/await over callbacks
+- Use Promise.all for parallel operations
+- Handle promise rejections explicitly
+
+## Testing Requirements
+
+- Unit tests for all business logic
+- Integration tests for API endpoints
+- Minimum [NUMBER]% code coverage
+- Use [MOCKING_LIBRARY] for mocks
+
+### Test Structure
+
+```
+describe('[Component/Function Name]', () => {
+  describe('[method/scenario]', () => {
+    it('should [expected behavior]', () => {
+      // Arrange
+      // Act
+      // Assert
+    });
+  });
+});
+```
+
+## Domain Terminology
+
+| Term | Definition |
+|------|------------|
+| [TERM_1] | [DEFINITION_1] |
+| [TERM_2] | [DEFINITION_2] |
+| [TERM_3] | [DEFINITION_3] |
+
+## Common Tasks
+
+### Adding a New API Endpoint
+
+1. Create route in `src/api/routes/`
+2. Add controller in `src/api/controllers/`
+3. Implement service logic in `src/services/`
+4. Add validation schemas
+5. Write tests
+
+### Adding a Database Model
+
+1. Create model in `src/models/`
+2. Add migration file
+3. Create repository in `src/repositories/`
+4. Update types/interfaces
+
+## Dependencies
+
+### Preferred Libraries
+
+- HTTP requests: [LIBRARY_NAME]
+- Validation: [LIBRARY_NAME]
+- Logging: [LIBRARY_NAME]
+- Date handling: [LIBRARY_NAME]
+
+### Avoid
+
+- [LIBRARY_TO_AVOID] - use [ALTERNATIVE] instead
+- [PATTERN_TO_AVOID] - use [ALTERNATIVE] instead
+
+## Security Considerations
+
+- Never log sensitive data (passwords, tokens, PII)
+- Validate all user input
+- Use parameterized queries for database operations
+- Store secrets in environment variables only
+
+## Performance Guidelines
+
+- Use pagination for list endpoints
+- Implement caching where appropriate
+- Avoid N+1 query problems
+- Use database indexes for frequent queries

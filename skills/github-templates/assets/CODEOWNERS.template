@@ -1,0 +1,53 @@
+# CODEOWNERS - Define code ownership for automatic review requests
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+# These owners will be requested for review when someone opens a PR
+*                       @org/maintainers
+
+# Documentation
+/docs/                  @org/tech-writers
+*.md                    @org/tech-writers
+README.md               @org/maintainers @org/tech-writers
+
+# Source code by area
+/src/api/               @org/backend-team
+/src/frontend/          @org/frontend-team
+/src/shared/            @org/backend-team @org/frontend-team
+
+# Infrastructure and DevOps
+/.github/               @org/devops
+/infrastructure/        @org/devops
+/docker/                @org/devops
+Dockerfile*             @org/devops
+docker-compose*.yml     @org/devops
+
+# Configuration files
+*.config.js             @org/maintainers
+*.config.ts             @org/maintainers
+/config/                @org/maintainers
+
+# Security-sensitive files
+/config/prod*           @org/devops @security-lead
+SECURITY.md             @security-lead
+.github/workflows/      @org/devops @security-lead
+
+# Dependencies
+package.json            @org/maintainers
+package-lock.json       @org/maintainers
+requirements.txt        @org/maintainers
+pyproject.toml          @org/maintainers
+
+# Database
+/migrations/            @org/backend-team @dba-team
+/schema/                @org/backend-team @dba-team
+
+# Tests
+/tests/                 @org/qa-team
+/__tests__/             @org/qa-team
+*.test.js               @org/qa-team
+*.spec.ts               @org/qa-team
+
+# Specific critical files
+/src/auth/              @security-lead @org/backend-team
+/src/payments/          @org/backend-team @finance-lead

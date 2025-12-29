@@ -1,0 +1,60 @@
+# Security Policy
+
+## Supported Versions
+
+| Version | Supported          |
+| ------- | ------------------ |
+| x.x.x   | :white_check_mark: |
+| x.x.x   | :x:                |
+
+## Reporting a Vulnerability
+
+We take security seriously. If you discover a security vulnerability, please follow these steps:
+
+### Do NOT
+
+- Open a public GitHub issue
+- Disclose the vulnerability publicly before it's fixed
+- Exploit the vulnerability beyond what's necessary to demonstrate it
+
+### Do
+
+1. **Email us directly** at [SECURITY_EMAIL]
+2. **Include details**:
+   - Description of the vulnerability
+   - Steps to reproduce
+   - Potential impact
+   - Suggested fix (if any)
+
+### What to Expect
+
+- **Acknowledgment**: Within 48 hours
+- **Initial Assessment**: Within 1 week
+- **Resolution Timeline**: Depends on severity
+  - Critical: 1-7 days
+  - High: 1-2 weeks
+  - Medium: 2-4 weeks
+  - Low: Next release cycle
+
+### Disclosure Policy
+
+- We follow coordinated disclosure
+- We will credit reporters (unless anonymity is requested)
+- We aim to fix critical vulnerabilities before public disclosure
+
+## Security Best Practices for Contributors
+
+- Never commit secrets, API keys, or credentials
+- Use environment variables for sensitive configuration
+- Keep dependencies updated
+- Follow secure coding guidelines
+
+## Security Features
+
+[DESCRIBE_SECURITY_FEATURES_OF_YOUR_PROJECT]
+
+## Contact
+
+For security concerns: [SECURITY_EMAIL]
+
+For general questions: [GENERAL_CONTACT]
