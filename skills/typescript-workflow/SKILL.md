@@ -1,15 +1,27 @@
 ---
 name: typescript-workflow
-description: TypeScript/JavaScript project workflow guidelines using Bun package manager. Covers bun run, bun install, bun add, tsconfig.json patterns, ESM/CommonJS modules, type safety, Prettier/ESLint/Biome formatting, naming conventions (PascalCase, camelCase, UPPER_SNAKE_CASE), project structure, error handling, environment variables, async patterns, and code quality tools. Activate when working with TypeScript files (.ts, .tsx), JavaScript files (.js, .jsx), Bun projects, tsconfig.json, package.json, bun.lock, or Bun-specific tooling.
+description: TypeScript/JavaScript project workflow guidelines using Bun package manager. Triggers on `.ts`, `.tsx`, `bun`, `package.json`, TypeScript. Covers bun run, bun install, bun add, tsconfig.json patterns, ESM/CommonJS modules, type safety, Biome formatting, naming conventions (PascalCase, camelCase, UPPER_SNAKE_CASE), project structure, error handling, environment variables, async patterns, and code quality tools. Activate when working with TypeScript files (.ts, .tsx), JavaScript files (.js, .jsx), Bun projects, tsconfig.json, package.json, bun.lock, or Bun-specific tooling.
 ---
 
 # TypeScript/JavaScript Projects Workflow
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+
 Guidelines for working with TypeScript and JavaScript projects using Bun as the primary package manager with modern tooling and best practices.
+
+## Tool Grid
+
+| Task | Tool | Command |
+|------|------|---------|
+| Lint + Format | Biome | `bun run biome check --apply .` |
+| Type check | tsc | `bun run tsc --noEmit` |
+| Dead code | ts-prune | `bun run ts-prune` |
+| Test | Bun test | `bun test` |
+| Coverage | c8 | `bun run c8 bun test` |
 
 ## CRITICAL: Bun Package Manager
 
-**ALWAYS use Bun commands** for all package and runtime operations in Bun projects:
+**You MUST use Bun commands** for all package and runtime operations in Bun projects:
 
 ```bash
 # Package management
@@ -148,89 +160,80 @@ In `package.json`, specify module type:
 
 ## Code Style and Formatting
 
-### Prettier Configuration
+### Biome (Preferred)
 
-Standard Prettier setup for consistent formatting:
+Biome is the RECOMMENDED all-in-one tool for linting and formatting. It replaces ESLint and Prettier with faster performance and unified configuration.
+
+**Installation:**
+
+```bash
+bun add --dev @biomejs/biome
+```
+
+**Configuration (`biome.json`):**
 
 ```json
 {
-  "semi": true,
-  "singleQuote": true,
-  "trailingComma": "es5",
-  "printWidth": 100,
-  "tabWidth": 2,
-  "useTabs": false,
-  "bracketSpacing": true,
-  "arrowParens": "always"
-}
-```
-
-### ESLint Configuration
-
-```javascript
-export default [
-  {
-    ignores: ['node_modules', 'dist', 'build', '*.config.js'],
-  },
-  {
-    files: ['src/**/*.{ts,tsx,js,jsx}'],
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-      },
-    },
-    rules: {
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-unused-vars': 'off',
-      'prefer-const': 'error',
-      'no-var': 'error',
-    },
-  },
-];
-```
-
-### Biome (Alternative All-in-One)
-
-Modern alternative combining linting and formatting:
-
-```json
-{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "organizeImports": {
     "enabled": true
   },
   "formatter": {
     "enabled": true,
+    "indentStyle": "space",
     "indentWidth": 2,
     "lineWidth": 100
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "complexity": {
+        "noUselessSwitchCase": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "always",
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
     }
   }
 }
 ```
 
-Run with: `biome check --apply src/`
-
-### Running Formatters
+**Usage:**
 
 ```bash
-# Prettier
-bun add --dev prettier
-bun run prettier --write src/
+# Check and fix all issues
+bun run biome check --apply .
 
+# Format only
+bun run biome format --write .
+
+# Lint only
+bun run biome lint .
+
+# CI mode (check without fixing)
+bun run biome check .
+```
+
+### Legacy: ESLint + Prettier
+
+If a project uses ESLint/Prettier, migration to Biome is RECOMMENDED. For legacy support:
+
+```bash
 # ESLint
 bun add --dev eslint
 bun run eslint src/ --fix
 
-# Biome
-bun add --dev @biomejs/biome
-bun run biome check --apply src/
+# Prettier
+bun add --dev prettier
+bun run prettier --write src/
 ```
 
 ## Naming Conventions
@@ -246,66 +249,24 @@ bun run biome check --apply src/
 ### Code Naming
 
 ```typescript
-// Classes and Types: PascalCase
-class UserService {
-  // Methods and properties: camelCase
-  getUserById(id: string): Promise<User> {
-    // Local variables: camelCase
-    const userData = {};
-    return userData;
-  }
+// Classes/Types/Interfaces/Enums: PascalCase
+class UserService { /* ... */ }
+interface UserRepository { /* ... */ }
+enum UserRole { Admin = 'ADMIN', User = 'USER' }
 
-  // Private members: camelCase with leading underscore
-  private _cache: Map<string, User> = new Map();
-  private _validateUser(user: User): boolean {
-    return true;
-  }
-}
+// Methods, properties, variables, functions: camelCase
+getUserById(id: string): Promise<User>
+const userData = {};
 
-// Interfaces: PascalCase (sometimes with I prefix, but discouraged)
-interface UserRepository {
-  getById(id: string): Promise<User | null>;
-}
-
-// Enums: PascalCase
-enum UserRole {
-  Admin = 'ADMIN',
-  User = 'USER',
-  Guest = 'GUEST',
-}
+// Private members: camelCase with leading underscore
+private _cache: Map<string, User> = new Map();
 
 // Constants: UPPER_SNAKE_CASE
 const MAX_RETRIES = 3;
-const DEFAULT_TIMEOUT = 5000;
 const API_BASE_URL = 'https://api.example.com';
 
-// Variables and functions: camelCase
-let retryCount = 0;
-function getUserData(id: string) {
-  // ...
-}
-```
-
-### React Component Naming
-
-```typescript
-// Component files: PascalCase
-export function UserProfile({ userId }: { userId: string }) {
-  // Props interface: PascalCase with Props suffix
-  return <div>Profile</div>;
-}
-
-// Hook files: camelCase with use prefix
-export function useUserData(userId: string) {
-  // ...
-}
-
-// Context: PascalCase
-const UserContext = createContext<User | null>(null);
-
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  return <UserContext.Provider value={null}>{children}</UserContext.Provider>;
-}
+// React hooks: camelCase with use prefix
+function useUserData(userId: string) { /* ... */ }
 ```
 
 ## Type Safety and Annotations
@@ -313,7 +274,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 ### Type Hints
 
 - **Explicit types** for function parameters and return values
-- **Never use `any`** - use `unknown` and type narrowing if needed
+- **MUST NOT use `any`** - use `unknown` and type narrowing if needed
 - **Avoid implicit `any`** - enable `noImplicitAny` in tsconfig.json
 
 ```typescript
@@ -396,49 +357,20 @@ if (!result.success) {
 project/
 ├── src/
 │   ├── main.ts              # Entry point
-│   ├── index.ts             # Main exports
 │   ├── types/               # Type definitions
-│   │   ├── user.ts
-│   │   ├── api.ts
-│   │   └── index.ts
-│   ├── services/            # Business logic services
-│   │   ├── user-service.ts
-│   │   └── auth-service.ts
+│   ├── services/            # Business logic
 │   ├── repositories/        # Data access layer
-│   │   ├── user-repository.ts
-│   │   └── base-repository.ts
 │   ├── models/              # Data models
-│   │   ├── user.ts
-│   │   └── product.ts
 │   ├── handlers/            # Request/event handlers
-│   │   ├── user-handler.ts
-│   │   └── auth-handler.ts
 │   ├── middleware/          # Express/web middleware
-│   │   ├── auth-middleware.ts
-│   │   └── error-middleware.ts
 │   ├── utils/               # Utility functions
-│   │   ├── logger.ts
-│   │   ├── formatters.ts
-│   │   └── validators.ts
 │   └── config/              # Configuration
-│       ├── env.ts
-│       └── constants.ts
-├── tests/
-│   ├── unit/
-│   │   └── services/
-│   ├── integration/
-│   └── fixtures/
+├── tests/                   # Unit and integration tests
 ├── dist/                    # Compiled output (gitignored)
-├── .github/
-│   └── workflows/           # CI/CD workflows
 ├── package.json
 ├── tsconfig.json
-├── prettier.config.js
-├── eslint.config.js
 ├── biome.json
-├── bun.lock
-├── .gitignore
-└── README.md
+└── bun.lock
 ```
 
 ### Import Patterns
@@ -463,11 +395,7 @@ export { UserService, UserRepository } from './index';
 ```typescript
 // Define custom error classes
 class AppError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public statusCode: number = 500
-  ) {
+  constructor(message: string, public code: string, public statusCode = 500) {
     super(message);
     this.name = 'AppError';
   }
@@ -476,48 +404,24 @@ class AppError extends Error {
 class ValidationError extends AppError {
   constructor(message: string, public field: string) {
     super(message, 'VALIDATION_ERROR', 400);
-    this.name = 'ValidationError';
   }
 }
 
 class NotFoundError extends AppError {
   constructor(message: string) {
     super(message, 'NOT_FOUND', 404);
-    this.name = 'NotFoundError';
-  }
-}
-
-// Type-safe error handling
-async function getUser(id: string): Promise<User> {
-  if (!id || id.trim() === '') {
-    throw new ValidationError('User ID cannot be empty', 'id');
-  }
-
-  try {
-    const user = await database.users.findById(id);
-    if (!user) {
-      throw new NotFoundError(`User ${id} not found`);
-    }
-    return user;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError('Failed to fetch user', 'DATABASE_ERROR', 500);
   }
 }
 
 // Result pattern for explicit error handling
-type Result<T, E = string> =
-  | { ok: true; value: T }
-  | { ok: false; error: E };
+type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
 
 async function safeFetchUser(id: string): Promise<Result<User, AppError>> {
   try {
     const user = await getUser(id);
     return { ok: true, value: user };
   } catch (error) {
-    return { ok: false, error: error instanceof AppError ? error : new AppError('Unknown error', 'UNKNOWN', 500) };
+    return { ok: false, error: error instanceof AppError ? error : new AppError('Unknown', 'UNKNOWN') };
   }
 }
 ```
@@ -526,72 +430,26 @@ async function safeFetchUser(id: string): Promise<Result<User, AppError>> {
 
 ### Environment Variables
 
-Use **dotenv** for development and environment validation:
-
-```bash
-bun add dotenv
-bun add --dev @types/node
-```
+Use Zod for environment validation:
 
 ```typescript
 // env.ts
 import { z } from 'zod';
 
-// Define schema
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().url(),
   API_KEY: z.string(),
-  DEBUG: z.enum(['true', 'false']).transform((v) => v === 'true').default('false'),
 });
 
-// Parse and validate
-const env = EnvSchema.parse(process.env);
-
-export default env;
-```
-
-Usage:
-
-```typescript
-import env from './config/env';
-
-console.log(env.PORT);        // 3000
-console.log(env.DATABASE_URL); // https://...
-console.log(env.DEBUG);        // false
-```
-
-### Configuration Files
-
-Organize settings by environment:
-
-```typescript
-// config/database.ts
-import env from './env';
-
-const databaseConfigs = {
-  development: {
-    host: 'localhost',
-    port: 5432,
-    database: 'myapp_dev',
-  },
-  production: {
-    host: env.DATABASE_HOST,
-    port: 5432,
-    database: env.DATABASE_NAME,
-  },
-};
-
-export const dbConfig = databaseConfigs[env.NODE_ENV];
+export default EnvSchema.parse(process.env);
 ```
 
 ## Common Async Patterns
 
-### Async/Await
-
 ```typescript
-// Basic async function
+// Async/await with error handling
 async function fetchUserData(id: string): Promise<User> {
   try {
     const response = await fetch(`/api/users/${id}`);
@@ -603,17 +461,7 @@ async function fetchUserData(id: string): Promise<User> {
   }
 }
 
-// Calling async functions
-const user = await fetchUserData('123');
-
-// Sequential operations
-async function createUserProfile(userId: string, profileData: unknown): Promise<void> {
-  const user = await getUser(userId);
-  const profile = await createProfile(user.id, profileData);
-  await linkProfileToUser(user.id, profile.id);
-}
-
-// Concurrent operations
+// Concurrent operations with Promise.all
 async function loadDashboardData(): Promise<DashboardData> {
   const [users, products, stats] = await Promise.all([
     fetchUsers(),
@@ -624,65 +472,10 @@ async function loadDashboardData(): Promise<DashboardData> {
 }
 ```
 
-### Promise Chains (When Needed)
-
-```typescript
-function fetchUserChain(id: string): Promise<User> {
-  return fetch(`/api/users/${id}`)
-    .then((res) => {
-      if (!res.ok) throw new Error('Not found');
-      return res.json();
-    })
-    .then((user) => validateUser(user))
-    .catch((error) => {
-      console.error('Error:', error);
-      throw error;
-    });
-}
-```
-
-### Error Handling in Async Code
-
-```typescript
-// Try-catch pattern
-async function safeOperation(): Promise<void> {
-  try {
-    const result = await riskyOperation();
-    console.log(result);
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      console.log('Validation failed:', error.message);
-    } else {
-      console.log('Unexpected error:', error);
-    }
-  } finally {
-    cleanup();
-  }
-}
-
-// Promise.catch pattern
-function chainedOperation(): Promise<void> {
-  return riskyOperation()
-    .then((result) => processResult(result))
-    .catch((error) => handleError(error))
-    .finally(() => cleanup());
-}
-```
-
 ## Testing Integration
 
-### Test Setup with Bun
-
-```bash
-bun add --dev @testing-library/react @testing-library/jest-dom
-```
-
-See **typescript-testing** skill for comprehensive testing patterns.
-
-### Example Tests
-
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { UserService } from '@services/user-service';
 
 describe('UserService', () => {
@@ -697,43 +490,26 @@ describe('UserService', () => {
     expect(user).toBeDefined();
     expect(user?.id).toBe('123');
   });
-
-  it('should throw NotFoundError for non-existent user', async () => {
-    expect(async () => {
-      await service.getById('nonexistent');
-    }).toThrow();
-  });
 });
 ```
 
+See **typescript-testing** skill for comprehensive testing patterns.
+
 ## Quick Reference
 
-**Bun Commands:**
-- `bun install` - Install dependencies
-- `bun add <pkg>` - Add production dependency
-- `bun add --dev <pkg>` - Add dev dependency
-- `bun run <script>` - Run package.json script
-- `bun <file.ts>` - Execute TypeScript directly
-- `bun test` - Run tests
-
 **Key Rules:**
-- Always use Bun commands in Bun projects
+- MUST use Bun commands in Bun projects
+- MUST NOT use `any` - use `unknown` and type guards
 - Use ESM (import/export) by default
 - Enable strict TypeScript (`"strict": true`)
-- Use path aliases for cleaner imports
-- Validate all external input with Zod or similar
-- Use custom error classes for errors
-- Use `async/await` for asynchronous code
-- Define types at module level, use constants for values
-- Never use `any` - use `unknown` and type guards
-- Use result types or custom errors for error handling
+- Validate all external input with Zod
+- Use custom error classes and Result types
 
-**Tools:**
-- **Prettier:** Code formatting
-- **ESLint:** Linting and best practices
-- **Biome:** All-in-one alternative
-- **Zod:** Runtime validation with type inference
-- **Bun Test:** Native test runner
+## Out of Scope
+
+- Next.js specifics → see `nextjs-workflow`
+- React specifics → see `react-workflow`
+- Database migrations → see `database-workflow`
 
 ---
 

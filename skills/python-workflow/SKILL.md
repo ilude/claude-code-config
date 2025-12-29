@@ -1,21 +1,36 @@
 ---
 name: python-workflow
-description: Python project workflow guidelines including package management (uv, pip, poetry), virtual environment handling, code style, type safety, testing with pytest, configuration management with Pydantic, CQRS patterns, Flask/FastAPI applications, and Python-specific development tasks. Activate when working with Python files (.py), Python projects, pyproject.toml, requirements.txt, setup.py, uv commands, pip, virtual environments, pytest, or any Python-specific tooling.
+description: "Python project workflow guidelines. Triggers: .py, pyproject.toml, uv, pip, pytest, Python. Covers package management, virtual environments, code style, type safety, testing, configuration, CQRS patterns, and Python-specific development tasks."
 ---
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
 
 # Python Projects Workflow
 
 Guidelines for working with Python projects across different package managers, code styles, and architectural patterns using modern tooling (uv, Python 3.9+).
 
+## Tool Grid
+
+| Task | Tool | Command |
+|------|------|---------|
+| Lint | Ruff | `uv run ruff check . --fix` |
+| Format | Ruff | `uv run ruff format .` |
+| Type check | Mypy | `uv run mypy src/` |
+| Type check | Pyright | `uv run pyright` |
+| Security | Bandit | `uv run bandit -r src/` |
+| Dead code | Vulture | `uv run vulture src/` |
+| Coverage | pytest-cov | `uv run pytest --cov=src` |
+| Complexity | Radon | `uv run radon cc src/ -a` |
+
 ## CRITICAL: Virtual Environment Best Practices
 
-**NEVER reference .venv paths manually** (e.g., `.venv/Scripts/python.exe` or `../../../.venv/`) - causes cross-platform issues and breaks on structure changes.
+**MUST NOT reference .venv paths manually** (e.g., `.venv/Scripts/python.exe` or `../../../.venv/`) - causes cross-platform issues and breaks on structure changes.
 
-**ALWAYS use `uv run python`** in uv-based projects (auto-finds venv, works cross-platform, no activation needed):
+**MUST use `uv run python`** in uv-based projects (auto-finds venv, works cross-platform, no activation needed):
 
 ```bash
-# ❌ Don't: ../../../.venv/Scripts/python.exe script.py
-# ✅ Do: uv run python script.py
+# BAD: ../../../.venv/Scripts/python.exe script.py
+# GOOD: uv run python script.py
 
 uv run python -m module.cli
 ```
@@ -31,8 +46,8 @@ uv run python -m module.cli
   - Development: `uv add --dev <package>`
   - Optional groups: `uv add --group <group-name> <package>` (e.g., notebook, docs)
 - **Execution:** `uv run python script.py` or `uv run pytest`
-- **Never call python/pytest directly** - always use `uv run`
-- Always use `uv run python` in uv-based projects
+- **MUST NOT call python/pytest directly** - MUST use `uv run`
+- MUST use `uv run python` in uv-based projects
 - Run `uv sync` before executing code in new projects
 
 ### Alternative: Traditional Tools
@@ -43,30 +58,32 @@ uv run python -m module.cli
 ### General Package Management
 - Respect the project's chosen package manager (uv, pip, poetry, pipenv)
 - Check `pyproject.toml` for project configuration
-- Don't mix package managers in the same project
+- MUST NOT mix package managers in the same project
 
 ## Python Module CLI Syntax
 
 **Use `-m` flag** when running modules as CLIs (tells Python to run module as script, not file):
 
 ```bash
-# ✅ Do: uv run python -m module.cli
-# ❌ Don't: uv run python module.cli  # fails - treats as file path
+# GOOD: uv run python -m module.cli
+# BAD: uv run python module.cli  # fails - treats as file path
 ```
 
 ## Code Style and Formatting
 
 ### PEP 8 Compliance
 - Follow **PEP 8** style guide
-- Line length: **88 characters** (Black standard)
+- Line length: **88 characters** (Ruff/Black standard)
 - Indentation: **4 spaces** per level
 - Two blank lines before top-level function/class definitions
 - One blank line between methods in a class
 
 ### Automated Formatters
-- **Black** - Primary code formatter (88 char line length)
-- **isort** - Import sorting (use Black profile for compatibility)
-- **Ruff** - Fast linter and formatter (optional alternative)
+- **Ruff** - Primary tool for linting AND formatting (replaces Black, isort, flake8)
+  - Linting: `uv run ruff check . --fix`
+  - Formatting: `uv run ruff format .`
+- Configure in `pyproject.toml` under `[tool.ruff]`
+- Use `ruff.toml` for standalone configuration
 
 ### Style Guidelines
 - Follow project's existing style (check `pyproject.toml`, `.editorconfig`)
@@ -77,9 +94,8 @@ uv run python -m module.cli
 ### Configuration Files
 Check these files for style preferences:
 - `pyproject.toml` - Modern Python project configuration
+- `ruff.toml` - Ruff-specific configuration
 - `.editorconfig` - Editor-agnostic style settings
-- `setup.cfg` - Legacy project configuration
-- `.flake8`, `.pylintrc` - Linter-specific configs
 
 ### Example Formatting
 ```python
@@ -158,12 +174,12 @@ def fetch_user(repo: Repository, user_id: str) -> User | None:
 - **Private methods/variables:** Leading underscore (`_internal_method`, `_cache`)
 
 ### Critical: Avoid Test Name Conflicts
-- **NEVER name classes with "Test" prefix** unless they are actual pytest test classes
+- **MUST NOT name classes with "Test" prefix** unless they are actual pytest test classes
 - Use descriptive names: `MockComponent`, `HelperClass`, `UtilityFunction` instead of `TestComponent`
 - Pytest collects classes starting with "Test" as test classes, causing confusion
 
 ### File Naming
-- Python files should be snake_case version of the primary class
+- Python files SHOULD be snake_case version of the primary class
 - Examples:
   - `DNSRecordHandler` → `dns_record_handler.py`
   - `ComponentFactory` → `component_factory.py`
@@ -221,7 +237,7 @@ def calculate_compound_interest(
 - Provide **meaningful error messages** that help debugging
 - Use Python's `logging` module with structured logging
 - Handle edge cases explicitly (empty inputs, None values, invalid types)
-- **CRITICAL:** Never remove public methods for lint fixes - preserve API stability
+- **CRITICAL:** MUST NOT remove public methods for lint fixes - preserve API stability
 
 ### Example Error Handling
 ```python
@@ -307,7 +323,7 @@ project/
 - Use **python-dotenv** for development: load from `.env` files
 - Use `os.getenv()` with sensible defaults
 - Validate configuration at startup
-- Never commit `.env` files to version control
+- MUST NOT commit `.env` files to version control
 
 ### Configuration Classes
 ```python
@@ -337,7 +353,7 @@ class AppConfig(BaseModel):
 ### Working with File Paths
 - Use `pathlib.Path` for cross-platform path handling
 - Avoid hardcoded paths; use `os.path.expanduser('~/')` for home directories
-- Always handle file encoding explicitly (UTF-8 default)
+- MUST handle file encoding explicitly (UTF-8 default)
 - Properly close files or use context managers (`with` statement)
 
 ### Example File Operations
@@ -367,12 +383,11 @@ with output_path.open('w', encoding='utf-8') as f:
 - Maintain >80% code coverage for critical paths
 
 ### Quality Tools
+- **Ruff** - Linting and formatting (primary)
 - **pytest** - Test framework
-- **coverage** - Code coverage measurement
-- **mypy** - Static type checking
+- **pytest-cov** - Code coverage measurement
+- **mypy/pyright** - Static type checking
 - **bandit** - Security scanning
-- **Black/Ruff** - Code formatting
-- **isort** - Import sorting
 
 ### Example Test with Fixtures
 ```python
@@ -471,6 +486,13 @@ async def main():
 - Look for test configuration in `pyproject.toml` or `pytest.ini`
 - Use project's test runner: `uv run pytest`, `poetry run pytest`, etc.
 
+## Out of Scope
+
+- Django specifics → see `django-workflow`
+- FastAPI specifics → see `fastapi-workflow`
+- Flask specifics → see `flask-workflow`
+- Database migrations → see `database-workflow`
+
 ## Quick Reference
 
 **Package managers:**
@@ -479,16 +501,16 @@ async def main():
 - Pip: `pip install`, `python -m pip`
 
 **Key rules:**
-- ✅ Use `uv run python` (never manual .venv paths)
-- ✅ Use `-m` flag for module CLIs
-- ✅ Check `pyproject.toml` for config
-- ✅ Strong type hints for all parameters/returns
-- ✅ Separate concerns: models, services, repositories
-- ✅ Use Pydantic for validation
-- ✅ Use pytest with fixtures
-- ❌ Don't mix package managers
-- ❌ Don't remove public methods for lint fixes
-- ❌ Don't name helper classes with "Test" prefix
+- MUST use `uv run python` (MUST NOT use manual .venv paths)
+- MUST use `-m` flag for module CLIs
+- MUST check `pyproject.toml` for config
+- MUST use strong type hints for all parameters/returns
+- MUST separate concerns: models, services, repositories
+- SHOULD use Pydantic for validation
+- SHOULD use pytest with fixtures
+- MUST NOT mix package managers
+- MUST NOT remove public methods for lint fixes
+- MUST NOT name helper classes with "Test" prefix
 
 ---
 
