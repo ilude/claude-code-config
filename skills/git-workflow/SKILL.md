@@ -139,10 +139,25 @@ When writing code in commits, avoid AI patterns:
 ## Safety Rules
 
 - Never skip hooks (--no-verify) without request
-- No force push to main/master
-- Only amend your own commits
+- Only amend your own unpushed commits
 - Check authorship before amending
 - If pre-commit hooks modify files, only amend if safe
+
+### Force Push - AVOID
+**Never use `git push --force` or `--force-with-lease` unless explicitly requested by user.**
+
+Why force push is dangerous:
+- Rewrites published history others may have pulled
+- Can cause collaborators to lose work
+- Breaks CI/CD pipelines referencing old commits
+- Makes debugging harder (commit SHAs change)
+
+Common mistakes that lead to force push:
+- Amending after push → just make a new commit instead
+- Rebasing a pushed branch → merge instead, or only rebase unpushed commits
+- "Cleaning up" commit history → leave it alone once pushed
+
+**If you pushed a commit, it's done.** Fix mistakes with new commits, not by rewriting history.
 
 ## Destructive Operations - BANNED
 
