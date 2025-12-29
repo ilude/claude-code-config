@@ -1,7 +1,9 @@
 ---
 name: git-workflow
-description: Git workflow and commit guidelines. MUST be activated before ANY git commit, push, or version control operation. Includes security scanning for secrets (API keys, tokens, .env files), commit message formatting with HEREDOC, logical commit grouping (docs, test, feat, fix, refactor, chore, build, deps), push behavior rules, safety rules for hooks and force pushes, and CRITICAL safeguards for destructive operations (filter-branch, gc --prune, reset --hard). Activate when user requests committing changes, pushing code, creating commits, rewriting history, or performing any git operations including analyzing uncommitted changes.
+description: Git workflow and commit guidelines. Trigger keywords: git, commit, push, .git, version control. MUST be activated before ANY git commit, push, or version control operation. Includes security scanning for secrets (API keys, tokens, .env files), commit message formatting with HEREDOC, logical commit grouping (docs, test, feat, fix, refactor, chore, build, deps), push behavior rules, safety rules for hooks and force pushes, and CRITICAL safeguards for destructive operations (filter-branch, gc --prune, reset --hard). Activate when user requests committing changes, pushing code, creating commits, rewriting history, or performing any git operations including analyzing uncommitted changes.
 ---
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
 
 # Git Workflow Guidelines
 
@@ -12,14 +14,14 @@ Comprehensive git workflow principles for all git operations.
 ## Critical Rules
 
 ### Push Behavior
-**NEVER push without explicit "push" keyword.** Examples: "commit my changes" → NO push, "commit and push" → YES push. After committing without push, inform: "Changes committed locally. Run 'git push' to push to remote."
+**MUST NOT push without explicit "push" keyword.** Examples: "commit my changes" → NO push, "commit and push" → YES push. After committing without push, inform: "Changes committed locally. Run 'git push' to push to remote."
 
 ### When to Commit
-Only commit when explicitly requested. Never commit proactively.
+Only commit when explicitly requested. MUST NOT commit proactively.
 
 ## Security First
 
-**Always scan for secrets. If found, STOP and refuse to commit.**
+**MUST scan for secrets. If found, STOP and refuse to commit.**
 
 Critical patterns:
 - AWS keys (`AKIA`, `ABIA`, `ACCA`, `ASIA` prefixes)
@@ -113,7 +115,7 @@ Focus on "why" rather than "what". Keep summary to 1-2 sentences.
 ### Human-Like Commit Style
 
 To avoid obvious AI patterns (while keeping good documentation):
-- **No emojis**: Never use ✅❌⚠️ℹ️ or any emojis in commits
+- **No emojis**: MUST NOT use ✅❌⚠️ℹ️ or any emojis in commits
 - **Natural grammar**: Use natural phrasing, don't worry about perfect grammar
 - **Avoid excessive structure**: Limit section headers (one "Changes:" section is fine, but avoid multiple like "Technical improvements:", "Benefits:", "Result:", etc.)
 - **Detail when needed**: Include relevant details, but focus on what and why, not exhaustive documentation of every file
@@ -123,7 +125,7 @@ To avoid obvious AI patterns (while keeping good documentation):
 When writing code in commits, avoid AI patterns:
 - **No border comments**: Don't use `# ===...===` or `# ---...---` style separators
 - **No "WHY" labels**: Instead of "# WHY: reason", just explain naturally: "# Reason for this..."
-- **No emojis in code**: Never use ✅❌⚠️ℹ️ in comments or strings
+- **No emojis in code**: MUST NOT use ✅❌⚠️ℹ️ in comments or strings
 - **Brief explanations**: Comment purpose, not every detail
 - **Casual tone**: "This handles..." not "This implementation provides comprehensive handling of..."
 
@@ -138,9 +140,9 @@ When writing code in commits, avoid AI patterns:
 
 ## Safety Rules
 
-- Never skip hooks (--no-verify) without request
+- MUST NOT skip hooks (--no-verify) without explicit request
 - Only amend your own unpushed commits
-- Check authorship before amending
+- MUST check authorship before amending
 - If pre-commit hooks modify files, only amend if safe
 
 ### Force Push - AVOID
@@ -161,7 +163,7 @@ Common mistakes that lead to force push:
 
 ## Destructive Operations - BANNED
 
-### NEVER Use These Commands
+### MUST NOT Use These Commands
 - `git filter-branch` - BANNED (deprecated by git project, use git-filter-repo)
 - `git gc --prune=now` - BANNED (bypasses 14-day safety window)
 - `git gc --aggressive` - BANNED (makes recovery harder)
@@ -175,7 +177,7 @@ Common mistakes that lead to force push:
 3. Ask: "Do you have backups? Assume any secrets are already compromised."
 4. Suggest: Rotate credentials first, then rewrite history
 5. If proceeding: User must install git-filter-repo and work on fresh clone
-6. NEVER run `gc --prune` after - default 14-day window allows recovery
+6. MUST NOT run `gc --prune` after - default 14-day window allows recovery
 
 ### If File is in .gitignore But Needs Committing
 1. STOP - Do not use `git add -f`

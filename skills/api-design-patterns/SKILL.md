@@ -3,6 +3,8 @@ name: api-design-patterns
 description: Language-agnostic API design patterns covering REST and GraphQL, including resource naming, HTTP methods, status codes, versioning, pagination, filtering, authentication, error handling, and schema design. Activate when working with APIs, REST endpoints, GraphQL schemas, API documentation, OpenAPI/Swagger, JWT, OAuth2, endpoint design, API versioning, rate limiting, or GraphQL resolvers.
 ---
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+
 # API Design Patterns
 
 Language-agnostic patterns for designing robust, scalable REST and GraphQL APIs. Focus on solving real problems with simple, maintainable solutions.
@@ -66,7 +68,7 @@ GET /getUserPosts
 | **OPTIONS** | Describe communication | Yes | Yes | No |
 
 **Best practices:**
-- **GET** - Never for mutations; safe to retry
+- **GET** - MUST NOT use for mutations; safe to retry
 - **POST** - Create new or trigger actions; use 201 Created
 - **PUT** - Full replacement; include all fields
 - **PATCH** - Partial update; only changed fields
@@ -147,7 +149,7 @@ Response:
 }
 ```
 
-**Cursor-based (Scalable, efficient for large datasets):**
+**Cursor-based (RECOMMENDED for large datasets):**
 ```json
 GET /users?cursor=abc123&limit=20
 
@@ -156,12 +158,13 @@ Response:
   "data": [...],
   "pagination": {
     "cursor": "next_cursor_xyz",
-    "limit": 20
+    "limit": 20,
+    "has_more": true
   }
 }
 ```
-Pros: Efficient queries, works with distributed systems
-Cons: Cursor generation logic needed
+Pros: Efficient queries, works with distributed systems, stable under concurrent writes
+Cons: Cursor generation logic needed, no random page access
 
 **Keyset pagination (Efficient, uses natural ordering):**
 ```
@@ -171,8 +174,105 @@ Use natural sort fields (ID, timestamp) instead of arbitrary cursors.
 
 **Recommendation:**
 - Small fixed datasets: offset/limit
-- Large or growing datasets: cursor-based
+- Large or growing datasets: cursor-based (RECOMMENDED)
 - Simple endpoints: keyset pagination
+
+### Idempotency Keys
+
+For safe retries on non-idempotent operations (POST, PATCH):
+```
+POST /payments
+X-Idempotency-Key: unique-client-generated-uuid
+
+Request:
+{
+  "amount": 100,
+  "currency": "USD"
+}
+```
+
+**Implementation:**
+- Client generates unique key per logical operation
+- Server stores key + response for configured duration (e.g., 24 hours)
+- Duplicate requests return cached response
+- Use 409 Conflict if same key with different payload
+
+### Conditional Requests
+
+**ETags for cache validation:**
+```
+GET /users/123
+Response:
+ETag: "abc123xyz"
+Last-Modified: Wed, 15 Jan 2025 10:30:00 GMT
+
+Subsequent request:
+GET /users/123
+If-None-Match: "abc123xyz"
+
+Response (if unchanged):
+304 Not Modified
+```
+
+**Optimistic locking for updates:**
+```
+PUT /users/123
+If-Match: "abc123xyz"
+{
+  "name": "Updated Name"
+}
+
+Response (if changed by another client):
+412 Precondition Failed
+```
+
+### Async Operations
+
+For long-running operations, use `202 Accepted` with job tracking:
+```
+POST /reports/generate
+{
+  "type": "monthly-sales"
+}
+
+Response:
+HTTP/1.1 202 Accepted
+Location: /jobs/job-123
+
+{
+  "job_id": "job-123",
+  "status": "pending",
+  "status_url": "/jobs/job-123"
+}
+```
+
+**Poll for completion:**
+```
+GET /jobs/job-123
+
+Response (in progress):
+{
+  "job_id": "job-123",
+  "status": "processing",
+  "progress": 45
+}
+
+Response (complete):
+{
+  "job_id": "job-123",
+  "status": "completed",
+  "result_url": "/reports/report-456"
+}
+```
+
+### OpenAPI Documentation
+
+All REST endpoints MUST be documented with OpenAPI specs:
+- Include request/response schemas
+- Document all status codes
+- Provide example values
+- Use `$ref` for reusable components
+- Keep spec in sync with implementation (generate or validate in CI)
 
 ### Filtering, Sorting, Searching
 
@@ -376,7 +476,7 @@ GET /api/data?api_key=xyz123
 **Pros:** Simple, easy to debug
 **Cons:** Less secure than OAuth2, no scoping
 
-**Storage:** Use secure vaults, never log keys, rotate regularly.
+**Storage:** Use secure vaults, MUST NOT log keys, rotate regularly.
 
 ### JWT (JSON Web Token)
 
@@ -461,6 +561,12 @@ Middleware approach:
 
 ## GraphQL Patterns
 
+### Core Principles
+
+- **Deprecation over versioning** - SHOULD use `@deprecated` directive instead of API versions
+- **DataLoaders for N+1 prevention** - MUST use batching for nested resolvers
+- **Query depth limiting** - SHOULD limit to 10-15 levels to prevent abuse
+
 ### Schema Design
 
 **Build around data needs, not database structure:**
@@ -495,16 +601,49 @@ type UserRow {
 ```graphql
 # Sensible defaults
 type User {
-  id: ID!             # Always required
+  id: ID!             # MUST be present
   email: String!      # Required
   bio: String         # Optional, may be null
   posts: [Post!]!     # Required array, posts required
 }
 ```
 
+### Relay Connection Spec (RECOMMENDED)
+
+For pagination, use the Relay Connection specification:
+```graphql
+type Query {
+  users(first: Int, after: String, last: Int, before: String): UserConnection!
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+```
+
+**Benefits:**
+- Standardized cursor-based pagination
+- Bi-directional navigation (first/after, last/before)
+- Edge metadata (cursor per item)
+- Works with Relay client out of the box
+
 ### Query vs Mutation
 
-**Queries:** Read operations, always safe to execute multiple times
+**Queries:** Read operations, MUST be safe to execute multiple times
 ```graphql
 query {
   user(id: "123") {
@@ -610,7 +749,7 @@ Query: {
 
 ### Error Handling
 
-**GraphQL errors:**
+**Option 1: GraphQL errors (standard):**
 ```json
 {
   "data": {
@@ -626,6 +765,113 @@ Query: {
       }
     }
   ]
+}
+```
+
+**Option 2: Union types for typed errors (RECOMMENDED for mutations):**
+```graphql
+union CreateUserResult = User | ValidationError | EmailAlreadyExists
+
+type ValidationError {
+  field: String!
+  message: String!
+}
+
+type EmailAlreadyExists {
+  email: String!
+  message: String!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): CreateUserResult!
+}
+```
+
+**Client handling:**
+```graphql
+mutation {
+  createUser(input: {email: "test@example.com", name: "Test"}) {
+    ... on User {
+      id
+      name
+    }
+    ... on ValidationError {
+      field
+      message
+    }
+    ... on EmailAlreadyExists {
+      email
+      message
+    }
+  }
+}
+```
+
+**Benefits:** Type-safe error handling, exhaustive checking, clear error contracts.
+
+### Query Depth & Complexity Limiting
+
+Prevent malicious or expensive queries:
+```graphql
+# Dangerous: deeply nested query
+query {
+  user {
+    friends {
+      friends {
+        friends {
+          friends { ... }
+        }
+      }
+    }
+  }
+}
+```
+
+**Implementation:**
+- SHOULD limit query depth to 10-15 levels
+- MAY implement query complexity scoring
+- SHOULD return 400 with clear error message when limits exceeded
+
+### Persisted Queries
+
+For production security and performance:
+```
+# Instead of sending full query:
+POST /graphql
+{
+  "query": "query GetUser($id: ID!) { user(id: $id) { name email } }",
+  "variables": { "id": "123" }
+}
+
+# Send query hash:
+POST /graphql
+{
+  "extensions": {
+    "persistedQuery": {
+      "sha256Hash": "abc123..."
+    }
+  },
+  "variables": { "id": "123" }
+}
+```
+
+**Benefits:**
+- Prevents arbitrary query injection
+- Reduces request payload size
+- Enables query whitelisting in production
+
+### Deprecation Strategy
+
+SHOULD use deprecation over versioning:
+```graphql
+type User {
+  id: ID!
+  name: String!
+  fullName: String! @deprecated(reason: "Use 'name' instead")
+
+  # Old field kept for compatibility
+  emailAddress: String @deprecated(reason: "Use 'email' instead. Will be removed 2025-06-01")
+  email: String!
 }
 ```
 
@@ -815,7 +1061,7 @@ GET /posts
 Returns all 1 million posts (crashes clients)
 ```
 
-**Solution:** Always paginate
+**Solution:** MUST paginate
 ```
 GET /posts?limit=20&offset=0
 Returns 20 items with pagination metadata
@@ -936,7 +1182,7 @@ query {
 }
 ```
 
-**Always include:**
+**MUST include:**
 - Consistent endpoint structure
 - Clear error responses
 - Proper status codes

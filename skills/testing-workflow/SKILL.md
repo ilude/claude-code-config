@@ -4,6 +4,8 @@ description: Testing workflow patterns and quality standards. Activate when work
 location: user
 ---
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+
 # Testing Workflow
 
 Testing workflow patterns and quality standards for various frameworks and languages.
@@ -25,7 +27,7 @@ Testing workflow patterns and quality standards for various frameworks and langu
 - ✅ No type errors
 - ✅ Code formatted
 
-**Never commit with:**
+**MUST NOT commit with:**
 - ❌ Failing tests
 - ❌ Any warnings
 - ❌ Linting errors
@@ -83,7 +85,7 @@ tests/
 - Test functions: `test_*` (e.g., `test_create_user_success`)
 - Fixtures: Descriptive names (e.g., `user_service`, `mock_database`)
 
-**CRITICAL:** Never name non-test classes with "Test" prefix - framework will try to collect them as tests.
+**CRITICAL:** MUST NOT name non-test classes with "Test" prefix - framework will try to collect them as tests.
 
 ## Coverage Requirements
 
@@ -378,12 +380,12 @@ def test_performance_within_limit(data_processor):
 4. Run full suite (`make check`)
 5. Commit when zero warnings
 
-**Always:**
+**MUST:**
 - ✅ Test after every change
 - ✅ Fix warnings immediately
 - ✅ Add tests for new features
 
-**Never:**
+**MUST NOT:**
 - ❌ Commit with failures/warnings
 - ❌ Skip tests after changes
 - ❌ Ignore failures as "known issues"
@@ -425,6 +427,24 @@ uv run mypy app/ tests/                     # Type check
 - ✅ Test edge cases and errors
 - ✅ Zero warnings in output
 - ✅ >80% coverage on critical paths
+
+## Advanced Testing Patterns
+
+| Pattern | Description |
+|---------|-------------|
+| **Local-first** | All tests MUST run locally without external dependencies |
+| **Testcontainers** | Use testcontainers for integration tests |
+| **Flaky policy** | 48-hour remediation, then quarantine or delete |
+| **Thread safety** | Go's `-race` flag, TSAN for thread safety |
+| **Idempotence** | Verify operations are safely re-runnable |
+| **Factories > Fixtures** | Prefer factories for flexible test data |
+| **Soak tests** | Long-running tests for memory leak detection |
+| **Acceptance tests** | BDD with domain language |
+
+## Out of Scope
+
+- Python-specific pytest patterns → see `python-testing`
+- TypeScript-specific patterns → see `typescript-testing`
 
 ---
 
