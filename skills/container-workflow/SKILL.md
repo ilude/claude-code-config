@@ -1,7 +1,9 @@
 ---
-name: container-projects
-description: Guidelines for containerized projects using Docker, Docker Compose, and container orchestration. Covers Dockerfiles, multi-stage builds, security, signal handling, entrypoint scripts, and deployment workflows.
+name: container-workflow
+description: Guidelines for containerized projects using Docker, Dockerfile, docker-compose, container, and containerization. Covers multi-stage builds, security, signal handling, entrypoint scripts, and deployment workflows.
 ---
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
 
 # Container-Based Projects
 
@@ -9,38 +11,42 @@ description: Guidelines for containerized projects using Docker, Docker Compose,
 
 Guidelines for containerized applications using Docker, Docker Compose, and orchestration tools.
 
+## Out of Scope
+- Infrastructure orchestration - see `ansible-workflow`
+- Kubernetes patterns - separate skill
+
 ## CRITICAL: Docker Compose V2 Syntax
 
-**NEVER use `version:` field** (deprecated) **or `docker-compose` with hyphen:**
+**MUST NOT use `version:` field** (deprecated) **or `docker-compose` with hyphen:**
 
 ```yaml
-# ❌ WRONG
+# MUST NOT
 version: '3.8'
 services:
   app:
     image: myapp
 
-# ✅ CORRECT
+# MUST
 services:
   app:
     image: myapp
 ```
 
 ```bash
-docker compose up    # ✅ CORRECT
-docker-compose up    # ❌ WRONG
+docker compose up    # MUST
+docker-compose up    # MUST NOT
 ```
 
 ## CRITICAL: DNS Configuration
 
 ```yaml
-# ✅ ALWAYS use .internal for container DNS
+# MUST use .internal for container DNS
 services:
   app:
     environment:
       - DNS_DOMAIN=.internal
 
-# ❌ NEVER use .local (conflicts with mDNS/Bonjour)
+# MUST NOT use .local (conflicts with mDNS/Bonjour)
 ```
 
 ## Dockerfile Core Requirements
@@ -48,10 +54,19 @@ services:
 ### Base Images
 - Use **Alpine Linux** for minimal attack surface and smaller images
   - Example: `python:3.12-alpine`, `node:20-alpine`
-- **Specify version tags** for reproducible builds (never use `latest`)
+- **MUST specify version tags** for reproducible builds (MUST NOT use `latest`)
+- **SHOULD use image digest pinning (SHA256)** for production deployments
 - Use official images from trusted registries
 - Consider distroless images for production
 - If Alpine packages unavailable, use Debian Slim-based containers
+
+```dockerfile
+# RECOMMENDED: Pin by digest for production
+FROM python:3.12-alpine@sha256:abc123...
+
+# Acceptable: Pin by tag for development
+FROM python:3.12-alpine
+```
 
 ### Multi-stage Builds
 - **Separate stages** for different purposes:
@@ -63,17 +78,25 @@ services:
 - Order commands from least to most frequently changing
 
 ### Security Checklist
-- ✅ Create and use non-root users
-- ✅ Set USER directive before EXPOSE and CMD
-- ✅ Never include secrets in layers
-- ✅ Use `.dockerignore` to exclude sensitive files
-- ✅ Scan images for vulnerabilities regularly
-- ✅ Keep base images updated
-- ✅ Run as non-root user (USER directive)
-- ✅ Never hardcode secrets or commit credentials
-- ✅ Validate all input, even from trusted sources
-- ✅ Include health checks for orchestration
-- ✅ Use Docker secrets for sensitive data in production
+- MUST create and use non-root users
+- MUST set USER directive before EXPOSE and CMD
+- MUST NOT include secrets in layers
+- MUST use `.dockerignore` to exclude sensitive files
+- SHOULD scan images for vulnerabilities regularly
+- SHOULD keep base images updated
+- MUST run as non-root user (USER directive)
+- MUST NOT hardcode secrets or commit credentials
+- MUST validate all input, even from trusted sources
+- MUST include health checks for orchestration
+- MUST use Docker secrets for sensitive data in production (NOT environment variables)
+- MUST set `no-new-privileges:true` security option
+
+```yaml
+services:
+  app:
+    security_opt:
+      - no-new-privileges:true
+```
 
 ## Project Structure Recognition
 
@@ -83,7 +106,7 @@ services:
 
 **Before starting:** Check README, Makefile, docker-compose.yml, .env files
 
-**Command hierarchy:** Makefile → Project scripts → Docker commands
+**Command hierarchy:** Makefile - Project scripts - Docker commands
 
 ## Layer Optimization
 
@@ -94,13 +117,13 @@ services:
 
 ### Example: Bad vs. Good
 ```dockerfile
-# ❌ BAD: Multiple layers
+# MUST NOT: Multiple layers
 RUN apk update
 RUN apk add curl
 RUN apk add git
 RUN rm -rf /var/cache/apk/*
 
-# ✅ GOOD: Single optimized layer
+# MUST: Single optimized layer
 RUN apk update && \
     apk add --no-cache \
         curl \
@@ -128,7 +151,7 @@ RUN apk add --no-cache \
 - Use BuildKit cache mounts for package managers
 
 ```dockerfile
-# ✅ GOOD: Dependency layer cached separately
+# MUST: Dependency layer cached separately
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
@@ -176,12 +199,44 @@ USER ${USER}
 
 | Factor | Implementation |
 |--------|---------------|
-| Configuration | Environment variables only, never hardcoded |
+| Configuration | Environment variables only, MUST NOT hardcode |
 | Dependencies | Explicit declarations with lockfiles |
 | Stateless | No local state, horizontally scalable |
 | Port Binding | Self-contained, exports via port binding |
 | Disposability | Fast startup/shutdown, graceful termination |
 | Dev/Prod Parity | Keep environments similar |
+
+## Resource Limits
+
+**MUST define resource limits** for production deployments:
+
+```yaml
+services:
+  app:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+          pids: 100
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+```
+
+## Log Rotation
+
+**MUST configure log rotation** to prevent disk exhaustion:
+
+```yaml
+services:
+  app:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
 
 ## Complete Multi-Stage Build Template
 
@@ -282,6 +337,8 @@ services:
 
 ## Docker Compose File Organization
 
+Use `include` directive for modular Compose files:
+
 ```
 project/
 ├── docker-compose.yml
@@ -295,6 +352,11 @@ project/
 ```
 
 ```yaml
+# docker-compose.yml - Main compose file with includes
+include:
+  - compose/service1.yml
+  - compose/service2.yml
+
 services:
   app:
     build:
@@ -316,6 +378,19 @@ services:
         condition: service_healthy
     networks:
       - app_network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+          pids: 100
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     image: postgres:15-alpine
@@ -337,6 +412,32 @@ volumes:
 networks:
   app_network:
     driver: bridge
+```
+
+## Docker Secrets
+
+**MUST use Docker secrets over environment variables** for sensitive data:
+
+```yaml
+services:
+  app:
+    secrets:
+      - db_password
+      - api_key
+    environment:
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  api_key:
+    external: true
+```
+
+```dockerfile
+# Read secret in application
+RUN --mount=type=secret,id=db_password \
+    cat /run/secrets/db_password > /app/config/db_password
 ```
 
 ## Development Workflow
@@ -646,6 +747,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 512M
+          pids: 100
 
   db:
     volumes:
@@ -703,7 +805,10 @@ docker system prune
 - Committing secrets
 - Using `.local` domain
 - Skipping health checks
+- Using env vars instead of secrets for sensitive data
+- Missing resource limits in production
+- No log rotation configured
 
 ---
 
-**Note:** Container projects vary in complexity. Always check project-specific documentation before making changes to Docker configurations.
+**Note:** Container projects vary in complexity. MUST check project-specific documentation before making changes to Docker configurations.

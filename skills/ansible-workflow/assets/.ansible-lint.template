@@ -1,0 +1,5 @@
+profile: production
+strict: true
+enable_list:
+  - fqcn-builtins
+  - no-changed-when
